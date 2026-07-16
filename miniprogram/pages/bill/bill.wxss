@@ -63,6 +63,32 @@
 
 .title-period { font-size: 40rpx; font-weight: 700; }
 
+/* 模式标签 */
+.mode-tag {
+  display: inline-block;
+  margin-top: 12rpx;
+  padding: 6rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+}
+.mode-normal {
+  background: rgba(212, 175, 55, 0.15);
+  border: 1rpx solid #d4af37;
+  color: #d4af37;
+}
+.mode-timed {
+  background: rgba(255, 90, 77, 0.12);
+  border: 1rpx solid #ff5a4d;
+  color: #ff5a4d;
+}
+.mode-challenge {
+  background: rgba(46, 204, 113, 0.12);
+  border: 1rpx solid #2ecc71;
+  color: #2ecc71;
+}
+
 .table {
   background: #ffffff;
   border-radius: 16rpx;

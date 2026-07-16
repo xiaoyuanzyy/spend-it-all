@@ -7,13 +7,16 @@ Page({
     code: '',
     isHost: false,
     players: [],
-    pollTimer: null
+    pollTimer: null,
+    statusBarHeight: 0
   },
 
   onLoad(options) {
+    const sys = wx.getSystemInfoSync();
     this.setData({
       code: options.code || 'BTL-0000',
-      isHost: options.host === '1'
+      isHost: options.host === '1',
+      statusBarHeight: sys.statusBarHeight || 44
     });
     this.loadPlayers();
     // 轮询
@@ -25,10 +28,22 @@ Page({
   },
 
   async loadPlayers() {
+    // 当前用户信息
+    const userInfo = app.globalData.userInfo || {};
+    const myNick = userInfo.nickname || userInfo.nickName || '我';
+    const myAvatar = userInfo.avatarUrl || '';
+
     try {
       const res = await cloud.getRoom({ code: this.data.code });
       if (res && res.players) {
-        this.setData({ players: res.players });
+        // 标记当前用户
+        const openid = app.globalData.openid;
+        const players = res.players.map(p => ({
+          ...p,
+          isMe: p.openid === openid,
+          nickname: p.openid === openid ? myNick : p.nickname
+        }));
+        this.setData({ players });
         if (res.status === 'started') {
           this.goReady(res);
         }
@@ -37,8 +52,8 @@ Page({
       // 兜底本地玩家
       this.setData({
         players: [
-          { openid: 'self', nickname: '富一代·布莱恩', avatar: '', isHost: true, slot: 'P1' },
-          { openid: 'p2', nickname: '等待加入...', avatar: '', isHost: false, slot: 'P2' }
+          { openid: 'self', nickname: myNick, avatar: myAvatar, isHost: true, slot: 'P1', isMe: true },
+          { openid: 'p2', nickname: '等待加入...', avatar: '', isHost: false, slot: 'P2', isMe: false }
         ]
       });
     }
@@ -56,8 +71,12 @@ Page({
     });
   },
 
-  onInvite() {
-    wx.showShareMenu({ withShareTicket: true });
+  onShareAppMessage() {
+    return {
+      title: `来对战吧！房间号 ${this.data.code}`,
+      path: `/pages/room-wait/room-wait?code=${this.data.code}`,
+      imageUrl: ''
+    };
   },
 
   onStart() {

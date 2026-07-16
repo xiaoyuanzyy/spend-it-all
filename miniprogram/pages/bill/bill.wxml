@@ -8,6 +8,7 @@
     </view>
     <view class="title">
       <view class="title-period">{{period}}</view>
+      <view class="mode-tag mode-{{mode}}">{{modeLabel}}</view>
     </view>
   </view>
 

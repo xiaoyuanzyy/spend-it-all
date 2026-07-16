@@ -1,18 +1,42 @@
-<view class="page">
-  <view class="status-bar">9:41</view>
-
-  <view class="budget">
-    <view class="budget-label">剩余预算</view>
-    <view class="budget-amount">{{budgetDisplay}}</view>
-  </view>
-
-  <view class="timer">
-    <view class="timer-row">
-      <view class="left">⏱ 限时消费</view>
-      <view class="right">剩余 {{remain}}s</view>
+<view class="page" style="padding-top: {{topHeight}}px;">
+  <!-- 固定在顶部的区域 -->
+  <view class="top-fixed">
+    <view class="status-bar">9:41</view>
+    <view class="header-row">
+      <view class="me-btn" bindtap="goProfile">
+        <text>👤</text>
+        <text>我的</text>
+      </view>
     </view>
-    <view class="timer-track">
-      <view class="timer-fill" style="width: {{progress}}%;"></view>
+    <view class="budget">
+      <view class="budget-row">
+        <view class="billionaire-info" wx:if="{{billionaire.name}}">
+          <text class="billionaire-name">{{billionaire.name}}</text>
+          <view class="billionaire-tags">
+            <text class="b-tag" wx:for="{{billionaire.tags}}" wx:key="*this">{{item}}</text>
+          </view>
+        </view>
+        <view class="budget-right">
+          <view class="budget-label">剩余预算</view>
+          <view class="budget-amount">{{budgetDisplay}}</view>
+          <view class="budget-percent">
+            <view class="percent-bar">
+              <view class="percent-fill" style="width: {{budgetPercent}}%;"></view>
+            </view>
+            <text class="percent-text">{{budgetPercent}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- 30s 倒计时 -->
+    <view class="timer">
+      <view class="timer-row">
+        <view class="timer-left">⏱ 限时消费</view>
+        <view class="timer-right">剩余 {{remain}}s</view>
+      </view>
+      <view class="timer-track">
+        <view class="timer-fill" style="width: {{progress}}%;"></view>
+      </view>
     </view>
   </view>
 
@@ -20,12 +44,21 @@
     <block wx:for="{{products}}" wx:key="id">
       <view class="product-card">
         <view class="bought-tag" wx:if="{{item.purchased > 0}}">已置办</view>
-        <view class="product-image" style="background-image: url('{{item.image}}');"></view>
+        <view class="product-image">
+          <block wx:if="{{item.image}}">
+            <image class="product-img" src="{{item.image}}" mode="aspectFill" lazy-load="{{true}}"></image>
+          </block>
+          <view class="product-placeholder" wx:else>
+            <text class="placeholder-icon">{{item.icon || '🛍️'}}</text>
+            <text class="placeholder-text">商品图</text>
+          </view>
+        </view>
         <view class="product-info">
           <view class="product-name">{{item.name}}</view>
           <view class="product-price">{{item.priceDisplay}}</view>
           <view class="product-actions">
-            <input class="qty-input" type="number" value="{{item.purchased}}" bindinput="onQtyChange" data-id="{{item.id}}" />
+            <view class="sell-btn" bindtap="onSell" data-id="{{item.id}}">出售</view>
+            <text class="qty-display">{{item.purchased || 0}}</text>
             <view class="buy-btn" bindtap="onBuy" data-id="{{item.id}}">置办</view>
           </view>
         </view>
@@ -33,14 +66,31 @@
     </block>
   </view>
 
-  <view class="scroll-hint">下拉发现更多惊喜</view>
+  <!-- 加载更多 -->
+  <view class="load-more">
+    <block wx:if="{{hasMore}}">
+      <view class="load-more-btn" bindtap="onTapLoadMore">
+        <text wx:if="{{loadingMore}}">加载中…</text>
+        <text wx:else>展开更多商品（{{loadedCount}}/{{totalCount}}）</text>
+      </view>
+    </block>
+    <block wx:elif="{{totalCount > 0}}">
+      <view class="load-more-done">— 已展示全部 {{totalCount}} 件商品 —</view>
+    </block>
+  </view>
+
+  <!-- 底部留白 -->
+  <view style="height: 200rpx;"></view>
 
   <view class="bottom-bar">
     <view class="total">
       <text class="total-label">合计</text>
       <text class="total-amount">{{totalDisplay}}</text>
+      <text class="total-sub">商品 {{itemTypes}} 种 | 共 {{totalQty}} 件</text>
     </view>
+    <view class="confirm-btn" bindtap="onConfirm">确认配置</view>
   </view>
 
+  <!-- 反应气泡 -->
   <view wx:if="{{showReaction}}" class="reaction-bubble {{reactionType}}">{{reaction}}</view>
 </view>

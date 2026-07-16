@@ -37,6 +37,7 @@ Page({
     try {
       const res = await cloud.getBills();
       if (res && res.list) {
+        const modeMap = { normal: '普通消费', timed: '限时挑战', challenge: '好友对战' };
         const list = res.list.map((b, idx) => {
           const products = b.products || [];
           const prog = b.budget > 0 ? Math.round(b.total / b.budget * 100) : 0;
@@ -48,7 +49,9 @@ Page({
             period: b.period || (res.list.length - idx),
             timeDisplay: this.formatDate(b.createdAt),
             progress: Math.min(prog, 100),
-            isOver: b.over > 0
+            isOver: b.over > 0,
+            modeLabel: modeMap[b.mode] || '普通消费',
+            modeKey: b.mode || 'normal'
           };
         });
         // 汇总：挥霍金额 = 所有账单总和
@@ -125,5 +128,9 @@ Page({
 
   onBack() {
     wx.navigateBack({ delta: 1 });
+  },
+
+  onGoAdmin() {
+    wx.navigateTo({ url: '/pages/admin/admin' });
   }
 });

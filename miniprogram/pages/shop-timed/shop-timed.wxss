@@ -1,8 +1,16 @@
 /* pages/shop-timed/shop-timed.wxss */
 .page {
-  min-height: 100vh;
   background: var(--bg-deep);
   padding-bottom: 200rpx;
+}
+
+.top-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-deep);
 }
 
 .status-bar {
@@ -15,14 +23,113 @@
   font-weight: 600;
 }
 
-.budget {
-  text-align: center;
-  padding: 30rpx 0 20rpx;
+.header-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 32rpx 20rpx;
 }
 
-.budget-label { font-size: 24rpx; color: #d4af37; letter-spacing: 4rpx; }
-.budget-amount { font-size: 64rpx; color: #d4af37; font-weight: 700; margin-top: 10rpx; }
+.me-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1rpx solid rgba(212, 175, 55, 0.3);
+  color: #d4af37;
+  font-size: 22rpx;
+}
 
+.budget {
+  padding: 30rpx 32rpx 30rpx;
+  border-bottom: 1rpx solid rgba(212, 175, 55, 0.12);
+}
+
+.budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.billionaire-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  flex: 1;
+}
+
+.billionaire-name {
+  font-size: 32rpx;
+  color: #f5f1e6;
+  font-weight: 700;
+}
+
+.billionaire-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.b-tag {
+  padding: 4rpx 16rpx;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1rpx solid rgba(212, 175, 55, 0.3);
+  border-radius: 999rpx;
+  color: #d4af37;
+  font-size: 20rpx;
+}
+
+.budget-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.budget-label {
+  font-size: 24rpx;
+  color: #d4af37;
+  letter-spacing: 4rpx;
+}
+
+.budget-amount {
+  font-size: 40rpx;
+  color: #d4af37;
+  font-weight: 700;
+  margin-top: 6rpx;
+  letter-spacing: 1rpx;
+}
+
+.budget-percent {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.percent-bar {
+  width: 120rpx;
+  height: 8rpx;
+  background: rgba(212, 175, 55, 0.15);
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.percent-fill {
+  height: 100%;
+  background: #d4af37;
+  border-radius: 4rpx;
+  transition: width 0.3s ease;
+}
+
+.percent-text {
+  font-size: 22rpx;
+  color: #d4af37;
+  min-width: 56rpx;
+  text-align: right;
+}
+
+/* 30s 倒计时 */
 .timer {
   padding: 0 32rpx 24rpx;
 }
@@ -35,8 +142,18 @@
   margin-bottom: 12rpx;
 }
 
-.timer-row .left { color: #ff5a4d; font-weight: 600; display: flex; align-items: center; gap: 6rpx; }
-.timer-row .right { color: #d4af37; font-weight: 600; }
+.timer-left {
+  color: #ff5a4d;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.timer-right {
+  color: #d4af37;
+  font-weight: 600;
+}
 
 .timer-track {
   height: 12rpx;
@@ -67,6 +184,50 @@
   position: relative;
 }
 
+.product-image {
+  position: relative;
+  width: 100%;
+  height: 220rpx;
+  background: #0a1129;
+  overflow: hidden;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+}
+
+.product-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  background: linear-gradient(135deg, #0a1129 0%, #11183a 50%, #0a1129 100%);
+}
+
+.placeholder-icon {
+  font-size: 48rpx;
+  opacity: 0.5;
+}
+
+.placeholder-text {
+  font-size: 22rpx;
+  color: #d4af37;
+  opacity: 0.4;
+}
+
+.product-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 60%, #11183a);
+  pointer-events: none;
+  z-index: 1;
+}
+
 .bought-tag {
   position: absolute;
   top: 12rpx;
@@ -79,29 +240,53 @@
   z-index: 2;
 }
 
-.product-image {
-  width: 100%;
-  height: 220rpx;
-  background: #0a1129;
-  background-size: cover;
-  background-position: center;
+.product-info {
+  padding: 16rpx 20rpx 20rpx;
 }
 
-.product-info { padding: 16rpx 20rpx 20rpx; }
-.product-name { color: #f5f1e6; font-size: 26rpx; font-weight: 600; margin-bottom: 8rpx; }
-.product-price { color: #d4af37; font-size: 30rpx; font-weight: 700; margin-bottom: 16rpx; }
-
-.product-actions { display: flex; gap: 12rpx; align-items: center; }
-
-.qty-input {
-  flex: 0 0 90rpx;
-  height: 50rpx;
-  background: #0a1129;
-  border: 1rpx solid rgba(212, 175, 55, 0.3);
-  border-radius: 12rpx;
-  text-align: center;
+.product-name {
   color: #f5f1e6;
   font-size: 26rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.product-price {
+  color: #d4af37;
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 16rpx;
+}
+
+.product-actions {
+  display: flex;
+  gap: 12rpx;
+  align-items: center;
+}
+
+/* 出售 / 数量 / 置办 */
+.sell-btn {
+  width: 80rpx;
+  height: 50rpx;
+  line-height: 50rpx;
+  border-radius: 12rpx;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1rpx solid rgba(231, 76, 60, 0.4);
+  color: #e74c3c;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+.sell-btn:active {
+  background: rgba(231, 76, 60, 0.35);
+}
+
+.qty-display {
+  min-width: 40rpx;
+  text-align: center;
+  color: #f5f1e6;
+  font-size: 30rpx;
+  font-weight: 700;
 }
 
 .buy-btn {
@@ -116,7 +301,29 @@
   text-align: center;
 }
 
-.scroll-hint { text-align: center; color: #a0a0a0; font-size: 22rpx; margin: 30rpx 0 20rpx; }
+.load-more {
+  text-align: center;
+  padding: 20rpx 24rpx;
+}
+
+.load-more-btn {
+  display: inline-block;
+  padding: 18rpx 48rpx;
+  background: rgba(212, 175, 55, 0.1);
+  border: 2rpx solid rgba(212, 175, 55, 0.4);
+  border-radius: 999rpx;
+  color: #d4af37;
+  font-size: 26rpx;
+}
+
+.load-more-btn:active {
+  background: rgba(212, 175, 55, 0.25);
+}
+
+.load-more-done {
+  color: #666;
+  font-size: 22rpx;
+}
 
 .bottom-bar {
   position: fixed;
@@ -127,22 +334,37 @@
   border-top: 2rpx solid rgba(212, 175, 55, 0.3);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  gap: 24rpx;
 }
 
 .total {
+  flex: 1;
   display: flex;
-  align-items: baseline;
-  gap: 12rpx;
+  flex-direction: column;
   color: #d4af37;
-  font-size: 32rpx;
-  font-weight: 700;
+  min-width: 0;
 }
 
-.total-label { font-size: 24rpx; }
-.total-amount { font-size: 36rpx; font-weight: 700; }
+.total-label { font-size: 20rpx; opacity: 0.7; }
+.total-amount { font-size: 40rpx; font-weight: 700; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.total-sub { font-size: 20rpx; color: rgba(255,255,255,0.45); }
 
+.confirm-btn {
+  width: 220rpx;
+  height: 80rpx;
+  border-radius: 999rpx;
+  background: #d4af37;
+  color: #1a1a2e;
+  font-size: 30rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 反应气泡 */
 .reaction-bubble {
   position: fixed;
   top: 30%;
@@ -155,7 +377,13 @@
   color: #1a1a2e;
   z-index: 200;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.4);
+  animation: pop 0.3s ease-out;
 }
 
 .reaction-bubble.positive { border: 2rpx solid #2ecc71; }
 .reaction-bubble.negative { border: 2rpx solid #e74c3c; }
+
+@keyframes pop {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}

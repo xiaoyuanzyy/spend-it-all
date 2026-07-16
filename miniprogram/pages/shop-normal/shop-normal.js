@@ -25,12 +25,18 @@ Page({
     hasMore: false,
     loadingMore: false,
     loadedCount: 0,
-    totalCount: 0
+    totalCount: 0,
+    // 限时模式
+    isTimed: false,
+    remain: 30,
+    progress: 100,
+    timer: null
   },
 
   onLoad() {
     const b = app.globalData.currentBillionaire || { name: '富豪', tags: [] };
-    this.setData({ billionaire: b });
+    const isTimed = app.globalData.currentMode === 'timed';
+    this.setData({ billionaire: b, isTimed });
     this.loadProducts(b);
     const budget = app.globalData.budget || 50000000;
     this.setData({
@@ -39,6 +45,11 @@ Page({
       budgetDisplay: formatFull(budget),
       budgetPercent: 100
     });
+    if (isTimed) this.startCountdown();
+  },
+
+  onUnload() {
+    if (this.data.timer) clearInterval(this.data.timer);
   },
 
   onReady() {
@@ -55,13 +66,13 @@ Page({
       const res = await cloud.getProducts(id);
       console.log('[shop-normal] getProducts 返回', res && res.list && res.list.length, '件');
       if (res && res.list && res.list.length > 0) {
-        // 统一 _id → id，确保置办按钮能匹配，并补齐图片
-        const list = res.list.map(p => {
+        // 统一 _id → id，确保置办按钮能匹配
+        let list = res.list.map(p => {
           const pid = p._id || p.id;
           return {
             ...p,
             id: pid,
-            image: p.image || `https://picsum.photos/seed/${pid}/400/300`,
+            image: p.image || '',
             priceDisplay: formatMoney(p.price),
             purchased: 0
           };
@@ -208,6 +219,38 @@ Page({
   },
 
   onConfirm() {
+    if (this.data.timer) clearInterval(this.data.timer);
+    const total = app.globalData.spent || 0;
+    const budget = this.data.budget;
+    const success = total >= budget * 0.9;
+    app.globalData.billResult = {
+      total,
+      budget,
+      success,
+      billionaire: this.data.billionaire,
+      products: this.data.cart
+    };
+    wx.redirectTo({ url: '/pages/bill/bill' });
+  },
+
+  // 倒计时
+  startCountdown() {
+    let remain = 30;
+    const t = setInterval(() => {
+      remain -= 1;
+      this.setData({
+        remain,
+        progress: (remain / 30) * 100
+      });
+      if (remain <= 0) {
+        clearInterval(t);
+        this.onAutoConfirm();
+      }
+    }, 1000);
+    this.setData({ timer: t });
+  },
+
+  onAutoConfirm() {
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
     const success = total >= budget * 0.9;

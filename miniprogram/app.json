@@ -7,7 +7,8 @@
     "pages/room-wait/room-wait",
     "pages/room-ready/room-ready",
     "pages/result/result",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/admin/admin"
   ],
   "window": {
     "backgroundTextStyle": "dark",

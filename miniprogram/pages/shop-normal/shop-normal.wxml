@@ -28,14 +28,30 @@
         </view>
       </view>
     </view>
+    <!-- 30s 倒计时（仅限时模式） -->
+    <view class="timer" wx:if="{{isTimed}}">
+      <view class="timer-row">
+        <view class="timer-left">⏱ 限时消费</view>
+        <view class="timer-right">剩余 {{remain}}s</view>
+      </view>
+      <view class="timer-track">
+        <view class="timer-fill" style="width: {{progress}}%;"></view>
+      </view>
+    </view>
   </view>
 
   <view class="products">
     <block wx:for="{{products}}" wx:key="id">
       <view class="product-card">
         <view class="bought-tag" wx:if="{{item.purchased > 0}}">已置办</view>
-        <view class="product-image" style="background-image: url('{{item.image}}');">
-          <text wx:if="{{!item.image}}">商品图</text>
+        <view class="product-image">
+          <block wx:if="{{item.image}}">
+            <image class="product-img" src="{{item.image}}" mode="aspectFill" lazy-load="{{true}}"></image>
+          </block>
+          <view class="product-placeholder" wx:else>
+            <text class="placeholder-icon">{{item.icon || '🛍️'}}</text>
+            <text class="placeholder-text">商品图</text>
+          </view>
         </view>
         <view class="product-info">
           <view class="product-name">{{item.name}}</view>

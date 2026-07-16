@@ -14,6 +14,7 @@ Page({
     period: '',
     billionName: '',
     mode: 'normal',
+    modeLabel: '普通消费',
     scrollHeight: 400,
     totalQty: 0,
     itemTypes: 0,
@@ -50,6 +51,9 @@ Page({
     // 计算商品总件数和种类数
     let totalQty = 0;
     items.forEach(item => { totalQty += item.qty || 0; });
+    // 模式映射
+    const modeMap = { normal: '普通消费', timed: '限时挑战', challenge: '好友对战' };
+    const modeLabel = modeMap[result.mode] || '普通消费';
     this.setData({
       items,
       totalDisplay: formatCNY(result.total),
@@ -60,6 +64,7 @@ Page({
       title: result.success ? '预算暴表！富豪已报警' : '省钱失败！富豪表示不高兴',
       period: '加载中…',
       mode: result.mode || 'normal',
+      modeLabel,
       totalQty,
       itemTypes: items.length,
       progress,

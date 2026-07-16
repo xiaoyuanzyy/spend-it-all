@@ -1,57 +1,237 @@
 // pages/shop-timed/shop-timed.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney } = require('../../utils/format.js');
+const { formatMoney, formatFull, formatM } = require('../../utils/format.js');
 
 Page({
   data: {
+    topHeight: 160,
     budget: 0,
+    remaining: 0,
+    spent: 0,
     budgetDisplay: '$0',
-    totalDisplay: '$0',
+    budgetPercent: 100,
     products: [],
+    allProducts: [],       // 全量商品（缓存）
     cart: [],
-    remain: 30,
-    progress: 0,
-    showReaction: false,
+    totalDisplay: '$0',
+    totalQty: 0,
+    itemTypes: 0,
     reaction: '',
     reactionType: '',
+    showReaction: false,
+    billionaire: null,
+    pageSize: 8,
+    hasMore: false,
+    loadingMore: false,
+    loadedCount: 0,
+    totalCount: 0,
+    // 倒计时
+    remain: 30,
+    progress: 0,
     timer: null
   },
 
   onLoad() {
-    const id = app.globalData.currentBillionaire
-      ? (app.globalData.currentBillionaire.id || 0)
-      : 0;
-    this.loadProducts(id);
+    const b = app.globalData.currentBillionaire || { name: '富豪', tags: [] };
+    this.setData({ billionaire: b });
+    this.loadProducts(b);
+    const budget = app.globalData.budget || 50000000;
     this.setData({
-      budget: app.globalData.budget || 50000000,
-      budgetDisplay: formatMoney(app.globalData.budget || 50000000)
+      budget: budget,
+      remaining: budget,
+      budgetDisplay: formatFull(budget),
+      budgetPercent: 100
     });
     this.startCountdown();
   },
 
-  async loadProducts(billionaireId) {
-    try {
-      const res = await cloud.getProducts(billionaireId);
-      if (res && res.list && res.list.length > 0) {
-        const list = res.list.map(p => ({
-          ...p,
-          priceDisplay: formatMoney(p.price),
-          purchased: 0
-        }));
-        this.setData({ products: list });
-        return;
-      }
-    } catch (e) {
-      console.warn('商品拉取失败', e);
-    }
-    this.setData({ products: [] });
+  onReady() {
+    // 测量顶部固定区域高度，设置 padding-top 防止内容被遮挡
+    const query = wx.createSelectorQuery();
+    query.select('.top-fixed').boundingClientRect(rect => {
+      if (rect) this.setData({ topHeight: rect.height });
+    }).exec();
   },
 
   onUnload() {
     if (this.data.timer) clearInterval(this.data.timer);
   },
 
+  async loadProducts(billionaire) {
+    const id = (billionaire && billionaire.id != null) ? billionaire.id : 0;
+    try {
+      const res = await cloud.getProducts(id);
+      console.log('[shop-timed] getProducts 返回', res && res.list && res.list.length, '件');
+      if (res && res.list && res.list.length > 0) {
+        // 统一 _id → id，确保置办按钮能匹配
+        let list = res.list.map(p => {
+          const pid = p._id || p.id;
+          return {
+            ...p,
+            id: pid,
+            image: p.image || '',
+            priceDisplay: formatMoney(p.price),
+            purchased: 0
+          };
+        });
+        const firstPage = list.slice(0, this.data.pageSize);
+        this.setData({
+          allProducts: list,
+          products: firstPage,
+          hasMore: list.length > this.data.pageSize,
+          loadedCount: firstPage.length,
+          totalCount: list.length
+        });
+        console.log('[shop-timed] 首次展示', firstPage.length, '/', list.length, 'hasMore:', list.length > this.data.pageSize);
+        return;
+      }
+    } catch (e) {
+      console.warn('[shop-timed] 商品拉取失败', e);
+    }
+    this.setData({ products: [], allProducts: [], hasMore: false, loadedCount: 0, totalCount: 0 });
+  },
+
+  // 页面触底自动加载
+  onReachBottom() {
+    this.loadMore();
+  },
+
+  // 点击手动加载（比滚动触底更可靠）
+  onTapLoadMore() {
+    this.loadMore();
+  },
+
+  loadMore() {
+    if (!this.data.hasMore || this.data.loadingMore) {
+      console.log('[shop-timed] loadMore 跳过 hasMore:', this.data.hasMore, 'loadingMore:', this.data.loadingMore);
+      return;
+    }
+    console.log('[shop-timed] 加载更多...');
+    this.setData({ loadingMore: true });
+
+    setTimeout(() => {
+      // 保存当前已展示商品中的购买状态，避免加载更多时丢失
+      const purchaseMap = {};
+      this.data.products.forEach(p => {
+        if (p.purchased > 0) {
+          purchaseMap[p.id] = p.purchased;
+        }
+      });
+
+      const currentLen = this.data.products.length;
+      const nextLen = currentLen + this.data.pageSize;
+      const moreProducts = this.data.allProducts.slice(0, nextLen);
+
+      // 将购买状态合并到新切片中
+      const merged = moreProducts.map(p => {
+        const purchased = purchaseMap[p.id];
+        if (purchased != null) {
+          return { ...p, purchased };
+        }
+        return p;
+      });
+
+      this.setData({
+        products: merged,
+        hasMore: nextLen < this.data.allProducts.length,
+        loadingMore: false,
+        loadedCount: merged.length
+      });
+      console.log('[shop-timed] 已加载', merged.length, '/', this.data.allProducts.length);
+    }, 300);
+  },
+
+  // 出售：数量归零
+  onSell(e) {
+    const id = e.currentTarget.dataset.id;
+    const products = this.data.products.map(p =>
+      String(p.id) === String(id) ? { ...p, purchased: 0 } : p
+    );
+    this.recalcCart(products);
+  },
+
+  recalcCart(products) {
+    let total = 0;
+    const cart = [];
+    products.forEach(p => {
+      if (p.purchased > 0) {
+        const sub = p.purchased * p.price;
+        total += sub;
+        cart.push({
+          id: p.id, name: p.name, price: p.price,
+          qty: p.purchased, subtotalDisplay: formatMoney(sub)
+        });
+      }
+    });
+    const remaining = Math.max(0, this.data.budget - total);
+    const percent = this.data.budget > 0 ? Math.round(remaining / this.data.budget * 100) : 0;
+    app.globalData.cart = cart;
+    app.globalData.spent = total;
+    let totalQty = 0;
+    cart.forEach(c => { totalQty += c.qty; });
+    this.setData({
+      products, cart,
+      totalDisplay: formatM(total),
+      totalQty,
+      itemTypes: cart.length,
+      remaining: remaining,
+      budgetDisplay: formatFull(remaining),
+      budgetPercent: percent
+    });
+  },
+
+  onBuy(e) {
+    const id = e.currentTarget.dataset.id;
+    const product = this.data.products.find(p => String(p.id) === String(id));
+    if (!product) return;
+
+    const b = this.data.billionaire;
+    const matchTags = (b && b.matchTags) || [];
+    const matched = (product.tags || []).some(pt => matchTags.includes(pt));
+
+    // 只有符合品味才买入
+    if (matched) {
+      const products = this.data.products.map(p =>
+        String(p.id) === String(id)
+          ? { ...p, purchased: (p.purchased || 0) + 1 }
+          : p
+      );
+      this.recalcCart(products);
+    }
+
+    // 弹反应气泡
+    this.showReaction(product, matched);
+  },
+
+  showReaction(product, matched) {
+    const catchphrases = this.data.billionaire && this.data.billionaire.catchphrase
+      ? [this.data.billionaire.catchphrase] : ['不错不错！'];
+    const reactions = matched
+      ? [`"${catchphrases[0]}"`, '👍 好眼光！', '👌 这品味可以！', '🤩 继续挥霍！']
+      : ['😒', '🙄', '😑', '😐'];
+    const suffix = matched ? '' : '与富豪气质不符不能购买';
+    const react = reactions[Math.floor(Math.random() * reactions.length)] + suffix;
+    this.setData({ showReaction: true, reaction: react, reactionType: matched ? 'positive' : 'negative' });
+    setTimeout(() => this.setData({ showReaction: false }), 1800);
+  },
+
+  onConfirm() {
+    const total = app.globalData.spent || 0;
+    const budget = this.data.budget;
+    const success = total >= budget * 0.9;
+    app.globalData.billResult = {
+      total,
+      budget,
+      success,
+      billionaire: this.data.billionaire,
+      products: this.data.cart
+    };
+    if (this.data.timer) clearInterval(this.data.timer);
+    wx.redirectTo({ url: '/pages/bill/bill' });
+  },
+
+  // 倒计时
   startCountdown() {
     let remain = 30;
     const t = setInterval(() => {
@@ -68,59 +248,17 @@ Page({
     this.setData({ timer: t });
   },
 
-  onQtyChange(e) {
-    const id = e.currentTarget.dataset.id;
-    const val = parseInt(e.detail.value, 10) || 0;
-    this.updateQty(id, val);
-  },
-
-  onBuy(e) {
-    const id = e.currentTarget.dataset.id;
-    const target = this.data.products.find(p => p.id === id);
-    if (target) this.updateQty(id, (target.purchased || 0) + 1, true);
-  },
-
-  updateQty(id, qty, withReaction = false) {
-    const products = this.data.products.map(p =>
-      p.id === id ? { ...p, purchased: qty } : p
-    );
-    let total = 0;
-    const cart = [];
-    products.forEach(p => {
-      if (p.purchased > 0) {
-        const sub = p.purchased * p.price;
-        total += sub;
-        cart.push({ id: p.id, name: p.name, price: p.price, qty: p.purchased, subtotalDisplay: formatMoney(sub) });
-      }
-    });
-    app.globalData.cart = cart;
-    app.globalData.spent = total;
-    this.setData({ products, cart, totalDisplay: formatMoney(total) });
-    if (withReaction) {
-      this.giveReaction(id, products);
-    }
-  },
-
-  giveReaction(productId, products) {
-    const p = products.find(x => x.id === productId);
-    if (!p) return;
-    const b = app.globalData.currentBillionaire || { tags: [] };
-    const match = p.tags.some(t => b.tags && b.tags.includes(t));
-    const positive = match;
-    const reactions = positive
-      ? ['👌 好品味！', '👍 不错！', '🤩 继续！']
-      : ['🙄 这啥？', '😒 不行', '😑 一般'];
-    const react = reactions[Math.floor(Math.random() * reactions.length)];
-    app.vibrateShort();
-    this.setData({ showReaction: true, reaction: react, reactionType: positive ? 'positive' : 'negative' });
-    setTimeout(() => this.setData({ showReaction: false }), 1500);
-  },
-
   onAutoConfirm() {
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
     const success = total >= budget * 0.9;
-    app.globalData.billResult = { total, budget, success, mode: 'timed', products: this.data.cart };
+    app.globalData.billResult = {
+      total,
+      budget,
+      success,
+      billionaire: this.data.billionaire,
+      products: this.data.cart
+    };
     wx.redirectTo({ url: '/pages/bill/bill' });
   }
 });

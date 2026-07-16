@@ -53,7 +53,10 @@
         </view>
         <view class="bill-meta">
           <text>第{{item.period}}期 · {{item.timeDisplay}}</text>
-          <text class="progress-tag {{item.isOver ? 'over' : ''}}">{{item.isOver ? '已超预算' : item.progress + '%'}}</text>
+          <view class="bill-meta-right">
+            <text class="mode-badge mode-{{item.modeKey}}">{{item.modeLabel}}</text>
+            <text class="progress-tag {{item.isOver ? 'over' : ''}}">{{item.isOver ? '已超预算' : item.progress + '%'}}</text>
+          </view>
         </view>
         <view class="bill-actions">
           <view class="bill-items">
@@ -72,6 +75,11 @@
     <view class="empty-illust">😶</view>
     <view class="empty-text">暂无消费记录</view>
     <view class="empty-sub">快去拯救富豪吧！</view>
+  </view>
+
+  <view class="admin-link" bindtap="onGoAdmin">
+    <text>🔧 AI 生图管理</text>
+    <text class="admin-arrow">→</text>
   </view>
 
   <view style="height: 160rpx;"></view>

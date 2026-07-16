@@ -6,35 +6,57 @@ Page({
   data: {
     code: '',
     isHost: false,
-    players: []
+    players: [],
+    statusBarHeight: 0
   },
 
   onLoad(options) {
+    const sys = wx.getSystemInfoSync();
     this.setData({
       code: options.code || 'BTL-0000',
-      isHost: options.host === '1' || options.start === '1'
+      isHost: options.host === '1' || options.start === '1',
+      statusBarHeight: sys.statusBarHeight || 44
     });
     this.loadPlayers();
   },
 
   async loadPlayers() {
+    const userInfo = app.globalData.userInfo || {};
+    const myNick = userInfo.nickname || userInfo.nickName || '我';
+    const myAvatar = userInfo.avatarUrl || '';
+
     try {
       const res = await cloud.getRoom({ code: this.data.code });
-      if (res && res.players) this.setData({ players: res.players });
+      if (res && res.players) {
+        const openid = app.globalData.openid;
+        const players = res.players.map(p => ({
+          ...p,
+          isMe: p.openid === openid,
+          nickname: p.openid === openid ? myNick : p.nickname
+        }));
+        this.setData({ players });
+      }
     } catch (e) {
       this.setData({
         players: [
-          { openid: 'p1', nickname: '富一代·布莱恩', avatar: '', isHost: true, slot: 'P1' },
-          { openid: 'p2', nickname: '铁公鸡·杰克', avatar: '', isHost: false, slot: 'P2' },
-          { openid: 'p3', nickname: '小富婆·苏珊', avatar: '', isHost: false, slot: 'P3' }
+          { openid: 'p1', nickname: myNick, avatar: myAvatar, isHost: true, slot: 'P1', isMe: true },
+          { openid: 'p2', nickname: '铁公鸡·杰克', avatar: '', isHost: false, slot: 'P2', isMe: false },
+          { openid: 'p3', nickname: '小富婆·苏珊', avatar: '', isHost: false, slot: 'P3', isMe: false }
         ]
       });
     }
   },
 
+  onShareAppMessage() {
+    return {
+      title: `来对战吧！房间号 ${this.data.code}`,
+      path: `/pages/room-wait/room-wait?code=${this.data.code}`,
+      imageUrl: ''
+    };
+  },
+
   onStart() {
     cloud.startRoom({ code: this.data.code }).then(() => {
-      // 30 秒后跳到结果页（模拟计时）
       setTimeout(() => {
         const result = {
           winner: this.data.players[0],
@@ -51,6 +73,12 @@ Page({
   },
 
   onExit() {
-    wx.reLaunch({ url: '/pages/index/index' });
+    wx.showModal({
+      title: '确认退出',
+      content: '退出后房间将被销毁',
+      success: r => {
+        if (r.confirm) wx.reLaunch({ url: '/pages/index/index' });
+      }
+    });
   }
 });
