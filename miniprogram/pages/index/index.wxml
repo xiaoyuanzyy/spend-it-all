@@ -1,0 +1,115 @@
+<view class="page">
+  <!-- 自定义导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-title-frame">
+      <view class="nav-title">花不完不许走</view>
+    </view>
+  </view>
+
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-title">
+      <text class="icon">🌐</text>
+      <text>全球财富调度中心</text>
+      <text class="icon">👑</text>
+    </view>
+    <view class="header-actions">
+      <view class="header-me" bindtap="goChallenge">
+        <text>⚡</text>
+        <text>挑战</text>
+      </view>
+      <view class="header-me" bindtap="onShowProfile">
+        <text>👤</text>
+        <text>我的</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签云 -->
+  <view class="tags-row">
+    <block wx:for="{{tags}}" wx:key="*this">
+      <view class="tag" bindtap="onTagTap" data-idx="{{index}}">{{item}}</view>
+    </block>
+  </view>
+
+  <!-- 转盘 -->
+  <view class="wheel-wrap">
+    <view class="wheel-pointer"></view>
+    <view class="wheel" style="transform: rotate({{rotateDeg}}deg); {{wheelConicGradient}}">
+      <block wx:for="{{sectors}}" wx:key="name">
+        <text class="segment-text" style="left: {{item.textLeft}}rpx; top: {{item.textTop}}rpx; transform: translate(-50%, -50%);">{{item.name}}</text>
+      </block>
+    </view>
+    <view class="wheel-inner">
+      <view class="inner-dot"></view>
+    </view>
+  </view>
+
+  <!-- 抽取按钮 -->
+  <view class="spin-btn-wrap">
+    <view class="spin-btn {{spinning ? 'disabled' : ''}}" bindtap="onSpin">抽 取</view>
+  </view>
+
+  <!-- 装饰金币 -->
+  <view class="coins">
+    <view class="coin">$</view>
+    <view class="coin coin-2">$</view>
+    <view class="coin coin-3">$</view>
+  </view>
+
+  <view class="hint">点击转盘，随机抽取一位富豪…</view>
+
+  <!-- 富豪简介卡片 -->
+  <view class="profile-overlay {{showProfile ? 'show' : ''}}" catchtap="onCloseProfile">
+    <view class="profile-card" catchtap="noop">
+      <view class="profile-close" bindtap="onCloseProfile">✕</view>
+
+      <view class="profile-avatar-wrap">
+        <view class="profile-avatar">{{profileAvatar}}</view>
+      </view>
+
+      <view class="profile-name">{{profileName}}</view>
+
+      <view class="profile-section">
+        <view class="profile-section-label">旗下公司</view>
+        <view class="profile-chips">
+          <block wx:for="{{profileCompanies}}" wx:key="*this">
+            <view class="profile-chip">{{item}}</view>
+          </block>
+        </view>
+      </view>
+
+      <view class="profile-section">
+        <view class="profile-section-label">个人资产</view>
+        <view class="profile-assets">{{profileAssets}}</view>
+      </view>
+
+      <view class="profile-section">
+        <view class="profile-section-label">性格标签</view>
+        <view class="profile-chips">
+          <block wx:for="{{profileTags}}" wx:key="*this">
+            <view class="profile-chip">{{item}}</view>
+          </block>
+        </view>
+      </view>
+
+      <view class="profile-catchphrase">"{{profileCatchphrase}}"</view>
+
+      <view class="profile-actions">
+        <view class="profile-btn-secondary" bindtap="onStartTimed">
+          <text>⏱</text>
+          <text>限时挑战</text>
+        </view>
+        <view class="profile-btn-secondary" bindtap="onStartChallenge">
+          <text>⚔️</text>
+          <text>好友对战</text>
+        </view>
+      </view>
+
+      <view class="profile-btn-primary" bindtap="onStartNormal">
+        <text>$</text>
+        <text>帮他消费</text>
+      </view>
+    </view>
+  </view>
+</view>

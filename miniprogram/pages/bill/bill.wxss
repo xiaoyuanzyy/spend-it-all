@@ -1,0 +1,222 @@
+/* pages/bill/bill.wxss */
+.page {
+  height: 100vh;
+  background: #f6efde;
+  color: #1a1a2e;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 滚动区域 - 仅包裹商品表格 */
+.scroll-area {
+  padding: 0 32rpx;
+  box-sizing: border-box;
+}
+
+.page::before {
+  content: '$';
+  position: absolute;
+  top: 240rpx;
+  left: 40rpx;
+  font-size: 480rpx;
+  color: rgba(212, 175, 55, 0.08);
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.title {
+  text-align: center;
+  padding: 16rpx 0 24rpx;
+}
+
+.nav-wrap {
+  background: #f6efde;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  position: relative;
+}
+
+.nav-back {
+  position: absolute;
+  left: 24rpx;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #d4af37;
+  font-weight: 300;
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #d4af37;
+  letter-spacing: 6rpx;
+}
+
+.title-period { font-size: 40rpx; font-weight: 700; }
+
+.table {
+  background: #ffffff;
+  border-radius: 16rpx;
+  border: 2rpx solid #d4af37;
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  padding: 20rpx 24rpx;
+  background: #f6efde;
+  border-bottom: 1rpx solid #d4af37;
+  font-size: 24rpx;
+  color: #1a1a2e;
+  font-weight: 600;
+}
+
+.table-row {
+  display: flex;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f0e6c5;
+  font-size: 24rpx;
+}
+
+.table-row:last-child { border-bottom: none; }
+.col-name { flex: 1; }
+.col-qty { width: 100rpx; text-align: center; }
+.col-price { width: 180rpx; text-align: right; color: #1a1a2e; }
+
+.summary {
+  margin: 20rpx 32rpx 0;
+  padding: 24rpx 24rpx;
+  background: #ffffff;
+  border: 2rpx solid #d4af37;
+  border-radius: 16rpx;
+  text-align: center;
+}
+
+.summary-label { font-size: 26rpx; color: #d4af37; font-weight: 600; }
+.summary-amount { font-size: 56rpx; font-weight: 700; color: #1a1a2e; margin: 10rpx 0 6rpx; }
+.summary-stats { font-size: 22rpx; color: #666; margin-bottom: 6rpx; }
+.stats-sep { margin: 0 8rpx; color: #ccc; }
+.summary-over { font-size: 22rpx; color: #e74c3c; }
+.summary-over.normal { color: #2ecc71; }
+
+.status-box {
+  margin: 20rpx 32rpx 40rpx;
+  padding: 28rpx 32rpx;
+  background: #1a1a2e;
+  border-radius: 16rpx;
+  border: 2rpx solid rgba(212, 175, 55, 0.5);
+  text-align: center;
+}
+
+.satisfy-meta {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 22rpx;
+  margin-bottom: 16rpx;
+  letter-spacing: 2rpx;
+}
+
+.satisfy-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+}
+
+.satisfy-stars {
+  font-size: 36rpx;
+  letter-spacing: 4rpx;
+  color: #d4af37;
+}
+
+.satisfy-emoji {
+  font-size: 44rpx;
+  line-height: 1;
+}
+
+.satisfy-progress {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #d4af37;
+  min-width: 72rpx;
+}
+
+.satisfy-progress.over {
+  color: #f08080;
+}
+
+.history-bar {
+  padding: 0 32rpx 16rpx;
+}
+
+.btn-history {
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: rgba(212, 175, 55, 0.12);
+  border: 2rpx solid rgba(212, 175, 55, 0.35);
+  color: #d4af37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+}
+
+.btn-history:active {
+  background: rgba(212, 175, 55, 0.25);
+}
+
+/* 底部固定区域 */
+.bottom-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: #f6efde;
+  border-top: 1rpx solid rgba(212, 175, 55, 0.3);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-bar {
+  display: flex;
+  gap: 24rpx;
+  padding: 20rpx 32rpx 8rpx;
+}
+
+.btn-replay {
+  flex: 1;
+  height: 90rpx;
+  border-radius: 999rpx;
+  background: #1a1a2e;
+  color: #d4af37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.btn-share {
+  flex: 1;
+  height: 90rpx;
+  border-radius: 999rpx;
+  background: #d4af37;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+}

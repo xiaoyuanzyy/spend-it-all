@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="status-bar">9:41</view>
+
+  <view class="header-row">
+    <view class="back-btn">‹ 返回</view>
+    <view class="title">
+      <text class="title-icon">⚔️</text>
+      <text>挑战结果</text>
+    </view>
+    <view style="width:120rpx;"></view>
+  </view>
+  <view class="divider"></view>
+
+  <view class="winner-card">
+    <view class="crown">👑</view>
+    <view class="winner-label">冠军</view>
+    <view class="winner-name">{{winner.nickname || '富一代·布莱恩'}}</view>
+    <view class="winner-amount">挥霍 {{winner.amountDisplay || '¥52,340,000'}}</view>
+  </view>
+
+  <view class="rank-section">
+    <view class="rank-title">排行榜</view>
+    <block wx:for="{{ranking}}" wx:key="slot">
+      <view class="rank-card">
+        <view class="rank-no">{{item.rank}}</view>
+        <view class="rank-avatar">{{item.nickname[0]}}</view>
+        <view class="rank-name">{{item.nickname}}</view>
+        <view class="rank-amount">¥{{item.amountShort}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="btn-replay" bindtap="onReplay">
+    <text>↻</text>
+    <text>再来一局</text>
+  </view>
+</view>

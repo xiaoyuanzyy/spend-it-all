@@ -1,0 +1,46 @@
+<view class="page">
+  <view class="status-bar">9:41</view>
+
+  <view class="budget">
+    <view class="budget-label">剩余预算</view>
+    <view class="budget-amount">{{budgetDisplay}}</view>
+  </view>
+
+  <view class="timer">
+    <view class="timer-row">
+      <view class="left">⏱ 限时消费</view>
+      <view class="right">剩余 {{remain}}s</view>
+    </view>
+    <view class="timer-track">
+      <view class="timer-fill" style="width: {{progress}}%;"></view>
+    </view>
+  </view>
+
+  <view class="products">
+    <block wx:for="{{products}}" wx:key="id">
+      <view class="product-card">
+        <view class="bought-tag" wx:if="{{item.purchased > 0}}">已置办</view>
+        <view class="product-image" style="background-image: url('{{item.image}}');"></view>
+        <view class="product-info">
+          <view class="product-name">{{item.name}}</view>
+          <view class="product-price">{{item.priceDisplay}}</view>
+          <view class="product-actions">
+            <input class="qty-input" type="number" value="{{item.purchased}}" bindinput="onQtyChange" data-id="{{item.id}}" />
+            <view class="buy-btn" bindtap="onBuy" data-id="{{item.id}}">置办</view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="scroll-hint">下拉发现更多惊喜</view>
+
+  <view class="bottom-bar">
+    <view class="total">
+      <text class="total-label">合计</text>
+      <text class="total-amount">{{totalDisplay}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{showReaction}}" class="reaction-bubble {{reactionType}}">{{reaction}}</view>
+</view>

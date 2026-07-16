@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="status-bar">9:41</view>
+
+  <view class="header-row">
+    <view class="back-btn" bindtap="onExit">‹ 返回</view>
+    <view class="title">
+      <text class="title-icon">⚔️</text>
+      <text>对战房间</text>
+    </view>
+    <view style="width:120rpx;"></view>
+  </view>
+  <view class="divider"></view>
+
+  <view class="room-card">
+    <view class="room-label">房间号</view>
+    <view class="room-code">{{code}}</view>
+    <view class="copy-btn">📋 复制</view>
+  </view>
+
+  <view class="player-card">
+    <view class="player-card-title">当前玩家</view>
+    <block wx:for="{{players}}" wx:key="slot">
+      <view class="player-row">
+        <view class="avatar {{item.nickname === '等待加入...' ? 'empty' : ''}}">{{item.nickname[0] || '?'}}</view>
+        <view class="player-info">
+          <view class="player-name">{{item.nickname}}</view>
+          <view class="player-tag" wx:if="{{item.isHost}}">房主</view>
+        </view>
+        <view class="player-slot">{{item.slot}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="btn-gold-gradient" bindtap="onStart">▶ 开始挑战</view>
+    <view class="btn-gold">👥 邀请好友</view>
+    <view class="btn-red-outline">[→ 退出房间</view>
+  </view>
+
+  <view class="wave"></view>
+</view>

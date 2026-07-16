@@ -1,0 +1,249 @@
+/* pages/profile/profile.wxss */
+.page {
+  min-height: 100vh;
+  background: #f6efde;
+  padding: 0 32rpx 60rpx;
+  position: relative;
+}
+
+.page::before {
+  content: '$';
+  position: absolute;
+  top: 200rpx;
+  left: -20rpx;
+  font-size: 320rpx;
+  color: rgba(212, 175, 55, 0.08);
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  position: relative;
+  background: #f6efde;
+}
+
+.nav-back {
+  position: absolute;
+  left: 24rpx;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #d4af37;
+  font-weight: 300;
+}
+
+.title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #d4af37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  letter-spacing: 4rpx;
+}
+
+.title-icon { color: #d4af37; }
+
+.user-card {
+  background: #ffffff;
+  border: 2rpx solid #d4af37;
+  border-radius: 16rpx;
+  padding: 36rpx 32rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4af37 0%, #f5e3a1 50%, #d4af37 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+  font-weight: 700;
+  color: #1a1a2e;
+  border: 3rpx solid #d4af37;
+}
+
+.user-info { flex: 1; }
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.nickname {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.edit-icon { color: #d4af37; font-size: 28rpx; }
+
+.vip { color: #a0a0a0; font-size: 22rpx; margin-top: 4rpx; }
+
+.role-badge {
+  display: inline-block;
+  margin-top: 16rpx;
+  padding: 8rpx 24rpx;
+  border-radius: 999rpx;
+  background: #f6efde;
+  border: 1rpx solid #d4af37;
+  color: #1a1a2e;
+  font-size: 22rpx;
+}
+
+.stats-card {
+  background: #ffffff;
+  border: 1rpx solid #d0c8b0;
+  border-radius: 16rpx;
+  padding: 30rpx 16rpx;
+  display: flex;
+  margin-bottom: 30rpx;
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.stat-icon { color: #d4af37; font-size: 32rpx; }
+.stat-value { font-size: 36rpx; font-weight: 700; color: #1a1a2e; }
+.stat-label { font-size: 22rpx; color: #a0a0a0; }
+.stat-divider { width: 1rpx; background: #d0c8b0; margin: 0 12rpx; }
+
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.history-title { font-size: 30rpx; font-weight: 700; color: #1a1a2e; }
+
+.clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 999rpx;
+  background: #f6efde;
+  border: 1rpx solid #d4af37;
+  color: #d4af37;
+  font-size: 22rpx;
+}
+
+.bill-card {
+  background: #ffffff;
+  border: 1rpx solid #d0c8b0;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  margin-bottom: 16rpx;
+}
+
+.bill-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 24rpx;
+}
+
+.bill-name { color: #1a1a2e; font-weight: 600; flex: 1; margin-right: 12rpx; }
+.bill-amount { color: #d4af37; font-weight: 700; }
+
+.bill-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 20rpx;
+  color: #b0a080;
+  margin-top: 10rpx;
+}
+
+.progress-tag {
+  font-size: 20rpx;
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.progress-tag.over {
+  color: #e74c3c;
+}
+
+.bill-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12rpx;
+}
+
+.bill-items { color: #a0a0a0; font-size: 22rpx; }
+.bill-more { color: #a0a0a0; }
+
+.delete-btn {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  background: #fef0f0;
+  border: 1rpx solid #e0a0a0;
+  color: #c0392b;
+  font-size: 22rpx;
+  flex-shrink: 0;
+}
+
+.empty {
+  background: #ffffff;
+  border: 1rpx solid #d0c8b0;
+  border-radius: 16rpx;
+  padding: 60rpx 32rpx;
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.empty-illust { font-size: 120rpx; margin-bottom: 20rpx; }
+.empty-text { color: #1a1a2e; font-size: 30rpx; font-weight: 600; }
+.empty-sub { color: #a0a0a0; font-size: 22rpx; margin-top: 8rpx; }
+
+/* 退休按钮固定在底部 */
+.retire-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: #f6efde;
+  z-index: 10;
+}
+
+.retire-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  height: 96rpx;
+  border-radius: 999rpx;
+  background: transparent;
+  border: 2rpx solid #d4af37;
+  color: #d4af37;
+  font-size: 28rpx;
+  font-weight: 600;
+}

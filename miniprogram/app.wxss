@@ -1,0 +1,187 @@
+/* app.wxss - 全局样式 */
+page {
+  --bg-deep: #0a1129;
+  --bg-card-dark: #11183a;
+  --bg-card: #ffffff;
+  --bg-cream: #f6efde;
+  --gold: #d4af37;
+  --gold-soft: #e8c768;
+  --gold-bg: #f5e3a1;
+  --text-primary: #1a1a2e;
+  --text-light: #f5f1e6;
+  --text-muted: #a0a0a0;
+  --text-gold: #d4af37;
+  --red: #e74c3c;
+  --green: #2ecc71;
+  --orange: #ff8c42;
+  --pink: #ff6b9d;
+  --teal: #1abc9c;
+  --blue: #2c5fc7;
+  --purple: #8e44ad;
+
+  background: var(--bg-deep);
+  color: var(--text-light);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+/* 容器 */
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-dark {
+  background: var(--bg-deep);
+}
+
+.page-cream {
+  background: var(--bg-cream);
+  color: var(--text-primary);
+}
+
+/* 状态栏 */
+.status-bar {
+  width: 100%;
+  height: 62rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-light);
+  position: relative;
+  z-index: 10;
+}
+
+.status-bar.cream {
+  color: var(--text-primary);
+}
+
+/* 通用按钮 */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  font-weight: 600;
+  font-size: 32rpx;
+  text-align: center;
+  transition: opacity 0.2s;
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: #1a1a2e;
+  box-shadow: 0 8rpx 24rpx rgba(212, 175, 55, 0.3);
+}
+
+.btn-gold-outline {
+  background: transparent;
+  color: var(--gold);
+  border: 2rpx solid var(--gold);
+}
+
+.btn-cream-outline {
+  background: transparent;
+  color: var(--gold);
+  border: 2rpx solid var(--gold);
+  border-radius: 999rpx;
+  padding: 20rpx 60rpx;
+  font-size: 30rpx;
+}
+
+.btn-dark {
+  background: #11183a;
+  color: var(--text-light);
+  border: 2rpx solid var(--gold);
+}
+
+/* 金色文字 */
+.text-gold { color: var(--gold); }
+.text-cream { color: var(--text-light); }
+.text-muted { color: var(--text-muted); }
+.text-red { color: var(--red); }
+.text-green { color: var(--green); }
+.text-orange { color: var(--orange); }
+
+/* 标题 */
+.title-large {
+  font-size: 48rpx;
+  font-weight: 700;
+}
+
+.title-medium {
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.title-small {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+/* 标签 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--gold);
+  border: 1rpx solid rgba(212, 175, 55, 0.3);
+}
+
+.tag-outline {
+  background: transparent;
+  border: 1rpx solid var(--gold);
+  color: var(--gold);
+}
+
+.tag-light {
+  background: var(--bg-cream);
+  color: var(--text-primary);
+  border: 1rpx solid #e0d6b8;
+}
+
+/* 卡片 */
+.card {
+  border-radius: 24rpx;
+  padding: 32rpx;
+  background: var(--bg-card);
+}
+
+.card-dark {
+  background: var(--bg-card-dark);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  border: 2rpx solid rgba(212, 175, 55, 0.3);
+}
+
+.card-cream {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  border: 2rpx solid var(--gold);
+}
+
+/* 装饰波浪 */
+.deco-wave {
+  width: 200rpx;
+  height: 20rpx;
+  margin: 30rpx auto;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+/* 安全区 */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
