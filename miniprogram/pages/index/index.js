@@ -191,21 +191,7 @@ Page({
   // 从简介卡片 → 好友对战
   onStartChallenge() {
     app.globalData.currentMode = 'challenge';
-    // 先创建房间，再跳转
-    const userInfo = app.globalData.userInfo || {};
-    wx.showLoading({ title: '创建房间…' });
-    cloud.createRoom({
-      host: {
-        nickname: userInfo.nickname || userInfo.nickName || '玩家',
-        avatar: userInfo.avatarUrl || ''
-      }
-    }).then(res => {
-      wx.hideLoading();
-      wx.redirectTo({ url: `/pages/room-wait/room-wait?code=${res.code}&host=1` });
-    }).catch(() => {
-      wx.hideLoading();
-      wx.showToast({ title: '创建失败，请重试', icon: 'none' });
-    });
+    wx.redirectTo({ url: '/pages/challenge/challenge' });
   },
 
   // 从简介卡片 → 普通消费

@@ -13,6 +13,10 @@ Page({
     title: '',
     period: '',
     billionName: '',
+    billionAvatar: '',
+    billionAssets: '',
+    billionTags: [],
+    billionCatchphrase: '',
     mode: 'normal',
     modeLabel: '普通消费',
     scrollHeight: 400,
@@ -28,6 +32,7 @@ Page({
 
   onLoad() {
     const result = app.globalData.billResult || { products: [], total: 0, budget: 0, success: false, billionaire: null };
+    console.log('[bill] onLoad result.mode:', result.mode);
     const billionaire = result.billionaire || { name: '富豪' };
     const items = (result.products || []).map(p => ({
       ...p,
@@ -52,7 +57,7 @@ Page({
     let totalQty = 0;
     items.forEach(item => { totalQty += item.qty || 0; });
     // 模式映射
-    const modeMap = { normal: '普通消费', timed: '限时挑战', challenge: '好友对战' };
+    const modeMap = { normal: '普通消费', timed: '限时消费', challenge: '好友挑战' };
     const modeLabel = modeMap[result.mode] || '普通消费';
     this.setData({
       items,
@@ -61,6 +66,10 @@ Page({
       remainingDisplay: formatCNY(remaining),
       isOver: over > 0,
       billionName: billionaire.name,
+      billionAvatar: billionaire.avatar || '',
+      billionAssets: formatCNY(billionaire.assets || 0),
+      billionTags: billionaire.tags || [],
+      billionCatchphrase: billionaire.catchphrase || '',
       title: result.success ? '预算暴表！富豪已报警' : '省钱失败！富豪表示不高兴',
       period: '加载中…',
       mode: result.mode || 'normal',
@@ -91,14 +100,14 @@ Page({
 
     // 测量所有固定区域高度，计算商品表格滚动区可用高度
     const query = wx.createSelectorQuery();
-    let headerH = 0, summaryH = 0, statusH = 0, bottomH = 0;
+    let headerH = 0, cardH = 0, summaryH = 0, statusH = 0, bottomH = 0;
     query.select('#bill-header').boundingClientRect(rect => { if (rect) headerH = rect.height; });
+    query.select('.billion-card').boundingClientRect(rect => { if (rect) cardH = rect.height + 20; });
     query.select('#bill-summary').boundingClientRect(rect => { if (rect) summaryH = rect.height; });
     query.select('#bill-status').boundingClientRect(rect => { if (rect) statusH = rect.height; });
     query.select('#bill-bottom').boundingClientRect(rect => { if (rect) bottomH = rect.height; });
     query.exec(() => {
-      // 60rpx 为 summary 和 status-box 的上下间距留余，避免底部固定按钮遮挡
-      const h = sys.windowHeight - headerH - summaryH - statusH - bottomH - 60;
+      const h = sys.windowHeight - headerH - cardH - summaryH - statusH - bottomH - 60;
       if (h > 0) this.setData({ scrollHeight: h });
     });
   },

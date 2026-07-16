@@ -12,6 +12,19 @@
     </view>
   </view>
 
+  <!-- 富豪信息卡片 -->
+  <view class="billion-card">
+    <view class="billion-avatar">{{billionAvatar || '👑'}}</view>
+    <view class="billion-body">
+      <view class="billion-name">{{billionName}}</view>
+      <view class="billion-assets">资产 {{billionAssets}}</view>
+      <view class="billion-tags" wx:if="{{billionTags.length > 0}}">
+        <text class="b-tag" wx:for="{{billionTags}}" wx:key="*this">{{item}}</text>
+      </view>
+      <view class="billion-quote" wx:if="{{billionCatchphrase}}">"{{billionCatchphrase}}"</view>
+    </view>
+  </view>
+
   <scroll-view scroll-y class="scroll-area" enhanced show-scrollbar="{{false}}" style="height: {{scrollHeight}}px;">
     <view class="table">
       <view class="table-header">

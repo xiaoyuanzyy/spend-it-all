@@ -16,6 +16,7 @@ exports.main = async (event) => {
     code,
     status: 'waiting', // waiting | started | finished
     hostOpenid: openid,
+    billionaire: event.billionaire || null, // 房主的富豪信息，所有玩家共享
     players: [
       {
         openid,

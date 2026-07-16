@@ -7,7 +7,8 @@ Page({
     code: '',
     isHost: false,
     players: [],
-    statusBarHeight: 0
+    statusBarHeight: 0,
+    pollTimer: null
   },
 
   onLoad(options) {
@@ -18,6 +19,25 @@ Page({
       statusBarHeight: sys.statusBarHeight || 44
     });
     this.loadPlayers();
+    // 非房主轮询，等待房主发起挑战
+    if (!this.data.isHost) {
+      this.data.pollTimer = setInterval(() => this.checkGameStart(), 2000);
+    }
+  },
+
+  onUnload() {
+    if (this.data.pollTimer) clearInterval(this.data.pollTimer);
+  },
+
+  async checkGameStart() {
+    try {
+      const res = await cloud.getRoom({ code: this.data.code });
+      if (res && res.status === 'started') {
+        this.goToGame();
+      }
+    } catch (e) {
+      // ignore
+    }
   },
 
   async loadPlayers() {
@@ -28,6 +48,10 @@ Page({
     try {
       const res = await cloud.getRoom({ code: this.data.code });
       if (res && res.players) {
+        // 使用房间中房主的富豪信息
+        if (res.billionaire) {
+          app.globalData.currentBillionaire = res.billionaire;
+        }
         const openid = app.globalData.openid;
         const players = res.players.map(p => ({
           ...p,
@@ -57,22 +81,40 @@ Page({
 
   onStart() {
     cloud.startRoom({ code: this.data.code }).then(() => {
-      setTimeout(() => {
-        const result = {
-          winner: this.data.players[0],
-          players: this.data.players.map((p, i) => ({
-            ...p,
-            amount: 52340000 - i * 14000000 - Math.floor(Math.random() * 5000000)
-          }))
-        };
-        app.globalData.challengeResult = result;
-        wx.redirectTo({ url: '/pages/result/result' });
-      }, 30000);
-      wx.showToast({ title: '挑战进行中… 30s', icon: 'none' });
+      this.goToGame();
+    }).catch(() => {
+      wx.showToast({ title: '开始失败，请重试', icon: 'none' });
     });
   },
 
+  async goToGame() {
+    if (this.data.pollTimer) clearInterval(this.data.pollTimer);
+    app.globalData.currentMode = 'challenge';
+    app.globalData.roomCode = this.data.code;
+    // 最后确认一次：从房间数据同步富豪（确保全员一致）
+    await this.syncBillionaireFromRoom();
+    const b = app.globalData.currentBillionaire;
+    if (b && b.assets) {
+      app.globalData.budget = b.assets;
+    }
+    app.globalData.spent = 0;
+    app.globalData.cart = [];
+    wx.redirectTo({ url: '/pages/shop-timed/shop-timed' });
+  },
+
+  async syncBillionaireFromRoom() {
+    try {
+      const res = await cloud.getRoom({ code: this.data.code });
+      if (res && res.billionaire && res.billionaire.name) {
+        app.globalData.currentBillionaire = res.billionaire;
+      }
+    } catch (e) {
+      // ignore
+    }
+  },
+
   onExit() {
+    if (this.data.pollTimer) clearInterval(this.data.pollTimer);
     wx.showModal({
       title: '确认退出',
       content: '退出后房间将被销毁',

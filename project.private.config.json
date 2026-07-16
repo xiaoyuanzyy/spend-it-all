@@ -15,11 +15,18 @@
     "miniprogram": {
       "list": [
         {
-          "name": "给商品配图",
-          "pathName": "pages/admin/admin",
+          "name": "好友对战",
+          "pathName": "pages/challenge/challenge",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "给商品配图",
+          "pathName": "pages/admin/admin",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         }
       ]
     }

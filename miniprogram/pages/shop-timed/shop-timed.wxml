@@ -93,4 +93,13 @@
 
   <!-- 反应气泡 -->
   <view wx:if="{{showReaction}}" class="reaction-bubble {{reactionType}}">{{reaction}}</view>
+
+  <!-- 挑战模式：等待其他玩家 -->
+  <view class="waiting-overlay" wx:if="{{waiting}}">
+    <view class="waiting-box">
+      <text class="waiting-icon">⏳</text>
+      <text class="waiting-text">等待其他玩家完成...</text>
+      <text class="waiting-sub">{{readyCount}}/{{totalPlayers}} 已完成</text>
+    </view>
+  </view>
 </view>

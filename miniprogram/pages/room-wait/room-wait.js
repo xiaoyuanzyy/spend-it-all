@@ -36,6 +36,10 @@ Page({
     try {
       const res = await cloud.getRoom({ code: this.data.code });
       if (res && res.players) {
+        // 使用房间中房主的富豪信息，确保所有玩家一致
+        if (res.billionaire) {
+          app.globalData.currentBillionaire = res.billionaire;
+        }
         // 标记当前用户
         const openid = app.globalData.openid;
         const players = res.players.map(p => ({
@@ -45,7 +49,8 @@ Page({
         }));
         this.setData({ players });
         if (res.status === 'started') {
-          this.goReady(res);
+          this.goToGame();
+          return;
         }
       }
     } catch (e) {
@@ -57,11 +62,6 @@ Page({
         ]
       });
     }
-  },
-
-  goReady(res) {
-    if (this.data.pollTimer) clearInterval(this.data.pollTimer);
-    wx.redirectTo({ url: `/pages/room-ready/room-ready?code=${this.data.code}` });
   },
 
   onCopy() {
@@ -86,10 +86,36 @@ Page({
     }
     cloud.startRoom({ code: this.data.code }).then(() => {
       if (this.data.pollTimer) clearInterval(this.data.pollTimer);
-      wx.redirectTo({ url: `/pages/room-ready/room-ready?code=${this.data.code}&start=1` });
+      this.goToGame();
     }).catch(() => {
-      wx.redirectTo({ url: `/pages/room-ready/room-ready?code=${this.data.code}&start=1` });
+      this.goToGame();
     });
+  },
+
+  async goToGame() {
+    if (this.data.pollTimer) clearInterval(this.data.pollTimer);
+    app.globalData.currentMode = 'challenge';
+    app.globalData.roomCode = this.data.code;
+    // 最后确认一次：从房间数据同步富豪（确保全员一致）
+    await this.syncBillionaireFromRoom();
+    const b = app.globalData.currentBillionaire;
+    if (b && b.assets) {
+      app.globalData.budget = b.assets;
+    }
+    app.globalData.spent = 0;
+    app.globalData.cart = [];
+    wx.redirectTo({ url: '/pages/shop-timed/shop-timed' });
+  },
+
+  async syncBillionaireFromRoom() {
+    try {
+      const res = await cloud.getRoom({ code: this.data.code });
+      if (res && res.billionaire && res.billionaire.name) {
+        app.globalData.currentBillionaire = res.billionaire;
+      }
+    } catch (e) {
+      // ignore
+    }
   },
 
   onExit() {

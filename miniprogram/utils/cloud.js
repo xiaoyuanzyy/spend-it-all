@@ -64,6 +64,7 @@ module.exports = {
   joinRoom: (data) => call('joinRoom', data),
   startRoom: (data) => call('startRoom', data),
   getRoom: (data) => call('getRoom', data),
+  submitRoomResult: (data) => call('submitRoomResult', data),
   // 资料
   saveProfile: (data) => call('saveProfile', data),
   getProfile: () => call('getProfile', {}),

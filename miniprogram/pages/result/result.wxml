@@ -34,4 +34,9 @@
     <text>↻</text>
     <text>再来一局</text>
   </view>
+
+  <view class="btn-bill" bindtap="onViewBill">
+    <text>📋</text>
+    <text>查看支付账单</text>
+  </view>
 </view>

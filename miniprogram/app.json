@@ -4,6 +4,7 @@
     "pages/shop-normal/shop-normal",
     "pages/shop-timed/shop-timed",
     "pages/bill/bill",
+    "pages/challenge/challenge",
     "pages/room-wait/room-wait",
     "pages/room-ready/room-ready",
     "pages/result/result",

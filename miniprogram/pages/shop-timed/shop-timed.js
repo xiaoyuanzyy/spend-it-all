@@ -29,13 +29,25 @@ Page({
     // 倒计时
     remain: 30,
     progress: 0,
-    timer: null
+    timer: null,
+    // 挑战模式等待
+    waiting: false,
+    readyCount: 0,
+    totalPlayers: 0
   },
 
-  onLoad() {
-    const b = app.globalData.currentBillionaire || { name: '富豪', tags: [] };
-    this.setData({ billionaire: b });
-    this.loadProducts(b);
+  async onLoad() {
+    const mode = app.globalData.currentMode;
+    if (mode === 'challenge') {
+      // 挑战模式：直接从云端房间拉取富豪数据，确保所有玩家完全一致
+      await this.loadBillionaireFromRoom();
+    }
+    // 非挑战模式 或 云端取回失败时走本地兜底
+    if (!this.data.billionaire || !this.data.billionaire.name) {
+      const b = app.globalData.currentBillionaire || { name: '富豪', tags: [] };
+      this.setData({ billionaire: b });
+      this.loadProducts(b);
+    }
     const budget = app.globalData.budget || 50000000;
     this.setData({
       budget: budget,
@@ -44,6 +56,26 @@ Page({
       budgetPercent: 100
     });
     this.startCountdown();
+  },
+
+  // 挑战模式：直接从房间数据拉取富豪信息（最可靠的来源）
+  async loadBillionaireFromRoom() {
+    const roomCode = app.globalData.roomCode;
+    if (!roomCode) return;
+
+    try {
+      const res = await cloud.getRoom({ code: roomCode });
+      if (res && res.billionaire && res.billionaire.name) {
+        const b = res.billionaire;
+        // 同步到全局数据
+        app.globalData.currentBillionaire = b;
+        app.globalData.budget = b.assets || 50000000;
+        this.setData({ billionaire: b });
+        this.loadProducts(b);
+      }
+    } catch (e) {
+      console.warn('[shop-timed] 从房间拉取富豪失败', e);
+    }
   },
 
   onReady() {
@@ -56,6 +88,24 @@ Page({
 
   onUnload() {
     if (this.data.timer) clearInterval(this.data.timer);
+    if (this.data.resultTimer) clearInterval(this.data.resultTimer);
+  },
+
+  // 倒计时
+  startCountdown() {
+    let remain = 30;
+    const t = setInterval(() => {
+      remain -= 1;
+      this.setData({
+        remain,
+        progress: ((30 - remain) / 30) * 100
+      });
+      if (remain <= 0) {
+        clearInterval(t);
+        this.onAutoConfirm();
+      }
+    }, 1000);
+    this.setData({ timer: t });
   },
 
   async loadProducts(billionaire) {
@@ -217,6 +267,16 @@ Page({
   },
 
   onConfirm() {
+    if (this.data.timer) clearInterval(this.data.timer);
+    // 挑战模式：提交结果，等待全员完成
+    if (app.globalData.currentMode === 'challenge') {
+      this.submitAndWait();
+      return;
+    }
+    this.goToBill();
+  },
+
+  goToBill() {
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
     const success = total >= budget * 0.9;
@@ -225,40 +285,88 @@ Page({
       budget,
       success,
       billionaire: this.data.billionaire,
-      products: this.data.cart
+      products: this.data.cart,
+      mode: app.globalData.currentMode
     };
-    if (this.data.timer) clearInterval(this.data.timer);
     wx.redirectTo({ url: '/pages/bill/bill' });
   },
 
-  // 倒计时
-  startCountdown() {
-    let remain = 30;
-    const t = setInterval(() => {
-      remain -= 1;
-      this.setData({
-        remain,
-        progress: ((30 - remain) / 30) * 100
-      });
-      if (remain <= 0) {
-        clearInterval(t);
-        this.onAutoConfirm();
+  // 挑战模式：提交结果并等待全员
+  async submitAndWait() {
+    const total = app.globalData.spent || 0;
+    const budget = this.data.budget;
+    // 保存账单数据，供结果页「查看账单」跳转使用
+    app.globalData.billResult = {
+      total,
+      budget,
+      success: total >= budget * 0.9,
+      billionaire: this.data.billionaire,
+      products: this.data.cart,
+      mode: 'challenge'
+    };
+    const roomCode = app.globalData.roomCode;
+
+    if (!roomCode) {
+      wx.showToast({ title: '房间异常，返回首页', icon: 'none' });
+      setTimeout(() => wx.reLaunch({ url: '/pages/index/index' }), 1500);
+      return;
+    }
+
+    this.setData({ waiting: true, readyCount: 1, totalPlayers: '?' });
+
+    try {
+      const res = await cloud.submitRoomResult({ code: roomCode, amount: total });
+      if (!res || !res.ok) {
+        wx.showToast({ title: '提交失败', icon: 'none' });
+        this.setData({ waiting: false });
+        return;
       }
-    }, 1000);
-    this.setData({ timer: t });
+
+      if (res.allDone) {
+        this.goToResult(res.players);
+      } else {
+        // 显示等待，轮询
+        const doneCount = res.players.filter(p => p.amount > 0).length;
+        this.setData({ readyCount: doneCount, totalPlayers: res.players.length });
+        this.data.resultTimer = setInterval(() => this.pollResult(), 2000);
+      }
+    } catch (e) {
+      console.warn('[shop-timed] 提交结果失败', e);
+      wx.showToast({ title: '提交失败', icon: 'none' });
+      this.setData({ waiting: false });
+    }
+  },
+
+  async pollResult() {
+    try {
+      const res = await cloud.getRoom({ code: app.globalData.roomCode });
+      if (!res || !res.players) return;
+
+      const doneCount = res.players.filter(p => p.amount > 0).length;
+      this.setData({ readyCount: doneCount, totalPlayers: res.players.length });
+
+      if (res.status === 'finished' || doneCount >= res.players.length) {
+        if (this.data.resultTimer) clearInterval(this.data.resultTimer);
+        this.goToResult(res.players);
+      }
+    } catch (e) {
+      // ignore
+    }
+  },
+
+  goToResult(players) {
+    if (this.data.resultTimer) clearInterval(this.data.resultTimer);
+    app.globalData.challengeResult = { players };
+    wx.redirectTo({ url: '/pages/result/result' });
   },
 
   onAutoConfirm() {
-    const total = app.globalData.spent || 0;
-    const budget = this.data.budget;
-    const success = total >= budget * 0.9;
-    app.globalData.billResult = {
-      total,
-      budget,
-      success,
-      billionaire: this.data.billionaire,
-      products: this.data.cart
-    };
-    wx.redirectTo({ url: '/pages/bill/bill' });
-  }
+    if (this.data.timer) clearInterval(this.data.timer);
+    // 挑战模式：提交结果，等待全员完成
+    if (app.globalData.currentMode === 'challenge') {
+      this.submitAndWait();
+      return;
+    }
+    this.goToBill();
+  },
 });

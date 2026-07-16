@@ -1,2 +1,75 @@
-<!--pages/challenge/challenge.wxml-->
-<text>pages/challenge/challenge.wxml</text>
+<view class="page">
+  <!-- 自定义头部 -->
+  <view class="header-row" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-back" bindtap="onBack">←</view>
+    <view class="title">
+      <text>好友对战</text>
+      <text class="title-icon">⚔️</text>
+    </view>
+  </view>
+
+  <!-- 当前富豪信息 -->
+  <view class="billionaire-card" wx:if="{{billionaire.name}}">
+    <view class="billionaire-label">本轮富豪</view>
+    <view class="billionaire-body">
+      <view class="billionaire-avatar">{{billionaire.avatar || '?'}}</view>
+      <view class="billionaire-info">
+        <view class="billionaire-name">{{billionaire.name}}</view>
+        <view class="billionaire-assets">预算 {{billionaire.assetsDisplay}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 对战规则 -->
+  <view class="rules-card">
+    <view class="rules-title">
+      <text>📜</text>
+      <text>对战规则</text>
+    </view>
+    <view class="rule-item">
+      <view class="rule-num">1</view>
+      <text>每人拥有相同的预算和时间，购买匹配富豪喜好的商品即可花掉预算</text>
+    </view>
+    <view class="rule-item">
+      <view class="rule-num">2</view>
+      <text>限时结束后，剩余预算最少的玩家获胜，成为「最佳败家王」</text>
+    </view>
+    <view class="rule-item">
+      <view class="rule-num">3</view>
+      <text>支持 2-4 人同时对战，房主可随时开始比赛</text>
+    </view>
+  </view>
+
+  <!-- 创建房间 -->
+  <view class="action-card">
+    <view class="action-header">
+      <text class="action-icon">🏠</text>
+      <view class="action-info">
+        <view class="action-title">创建房间</view>
+        <view class="action-desc">生成房间号，邀请好友加入</view>
+      </view>
+      <view class="btn-gold" bindtap="onCreateRoom">创建房间</view>
+    </view>
+  </view>
+
+  <!-- 加入房间 -->
+  <view class="action-card">
+    <view class="action-header">
+      <text class="action-icon">🚪</text>
+      <view class="action-info">
+        <view class="action-title">加入房间</view>
+      </view>
+      <input
+        class="room-input"
+        type="text"
+        placeholder="输入房间号，如 BTL-1234"
+        value="{{roomCode}}"
+        bindinput="onInputCode"
+        maxlength="20"
+      />
+      <view class="btn-join {{roomCode ? '' : 'disabled'}}" bindtap="onJoinRoom">加入</view>
+    </view>
+  </view>
+
+  <view class="wave"></view>
+</view>

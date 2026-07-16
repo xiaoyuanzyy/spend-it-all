@@ -1,7 +1,9 @@
 /* pages/shop-timed/shop-timed.wxss */
 .page {
+  min-height: 100vh;
   background: var(--bg-deep);
   padding-bottom: 200rpx;
+  box-sizing: border-box;
 }
 
 .top-fixed {
@@ -386,4 +388,47 @@
 @keyframes pop {
   0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
   100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
+
+/* 挑战模式等待遮罩 */
+.waiting-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.waiting-box {
+  background: #11183a;
+  border: 2rpx solid #d4af37;
+  border-radius: 24rpx;
+  padding: 64rpx 80rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.waiting-icon {
+  font-size: 80rpx;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.waiting-text {
+  font-size: 32rpx;
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.waiting-sub {
+  font-size: 24rpx;
+  color: rgba(212, 175, 55, 0.6);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
 }

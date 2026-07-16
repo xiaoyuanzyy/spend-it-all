@@ -24,6 +24,11 @@ Page({
   },
 
   onReplay() {
-    wx.reLaunch({ url: '/pages/index/index' });
+    app.globalData.currentMode = 'challenge';
+    wx.redirectTo({ url: '/pages/challenge/challenge' });
+  },
+
+  onViewBill() {
+    wx.navigateTo({ url: '/pages/bill/bill' });
   }
 });

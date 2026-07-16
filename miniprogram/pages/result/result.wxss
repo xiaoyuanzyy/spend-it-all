@@ -131,3 +131,22 @@
   gap: 8rpx;
   box-shadow: 0 8rpx 24rpx rgba(212, 175, 55, 0.4);
 }
+
+.btn-bill {
+  position: fixed;
+  bottom: 180rpx;
+  left: 32rpx;
+  right: 32rpx;
+  height: 80rpx;
+  border-radius: 999rpx;
+  background: #ffffff;
+  color: #1a1a2e;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  border: 2rpx solid #d4af37;
+  box-shadow: 0 4rpx 12rpx rgba(212, 175, 55, 0.2);
+}

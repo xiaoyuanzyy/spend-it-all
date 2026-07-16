@@ -17,7 +17,8 @@ exports.main = async (event) => {
       code: room.code,
       status: room.status,
       players: room.players,
-      hostOpenid: room.hostOpenid
+      hostOpenid: room.hostOpenid,
+      billionaire: room.billionaire || null
     };
   } catch (e) {
     return { ok: false, error: e.message };

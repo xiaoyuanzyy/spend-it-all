@@ -223,12 +223,15 @@ Page({
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
     const success = total >= budget * 0.9;
+    // 用页面 data 而非 globalData，避免生命周期中的竞态
+    const mode = this.data.isTimed ? 'timed' : 'normal';
     app.globalData.billResult = {
       total,
       budget,
       success,
       billionaire: this.data.billionaire,
-      products: this.data.cart
+      products: this.data.cart,
+      mode
     };
     wx.redirectTo({ url: '/pages/bill/bill' });
   },
@@ -254,12 +257,15 @@ Page({
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
     const success = total >= budget * 0.9;
+    // 用页面 data 而非 globalData，避免生命周期中的竞态
+    const mode = this.data.isTimed ? 'timed' : 'normal';
     app.globalData.billResult = {
       total,
       budget,
       success,
       billionaire: this.data.billionaire,
-      products: this.data.cart
+      products: this.data.cart,
+      mode
     };
     wx.redirectTo({ url: '/pages/bill/bill' });
   }
