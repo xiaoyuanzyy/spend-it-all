@@ -1,7 +1,7 @@
 // pages/challenge/challenge.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney } = require('../../utils/format.js');
+const { formatMoney, shortName } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -21,10 +21,11 @@ Page({
     // 读取全局数据中的富豪信息
     const b = app.globalData.currentBillionaire;
     if (b && b.name) {
+      const dName = shortName(b.name);
       this.setData({
         billionaire: {
-          name: b.name,
-          avatar: (b.name || '?')[0],
+          name: dName,
+          avatar: (dName || '?')[0],
           assetsDisplay: formatMoney(b.assets || 0)
         }
       });

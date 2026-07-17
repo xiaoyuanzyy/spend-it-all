@@ -89,6 +89,11 @@
   margin-bottom: 16rpx;
 }
 
+.rank-card.rank-self-winner {
+  border: 2rpx solid #d4af37;
+  box-shadow: 0 0 16rpx rgba(212, 175, 55, 0.25);
+}
+
 .rank-no {
   font-size: 36rpx;
   color: #d4af37;
@@ -149,4 +154,246 @@
   gap: 8rpx;
   border: 2rpx solid #d4af37;
   box-shadow: 0 4rpx 12rpx rgba(212, 175, 55, 0.2);
+}
+
+/* ======== 礼花动画层 ======== */
+.fireworks-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: overlayFadeIn 0.4s ease;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti {
+  position: absolute;
+  top: -40rpx;
+  animation: confettiFall linear forwards;
+}
+
+.confetti.circle {
+  border-radius: 50%;
+}
+
+.confetti.rect {
+  border-radius: 2rpx;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.hero-text {
+  color: #d4af37;
+  font-size: 44rpx;
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 0 0 30rpx rgba(212, 175, 55, 0.6), 0 4rpx 12rpx rgba(0,0,0,0.5);
+  letter-spacing: 4rpx;
+  padding: 0 40rpx;
+  z-index: 1;
+  animation: conqueredBounce 0.6s ease 0.2s both;
+}
+
+@keyframes conqueredBounce {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.hero-sub {
+  margin-top: 16rpx;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 26rpx;
+  letter-spacing: 2rpx;
+  z-index: 1;
+  text-align: center;
+  padding: 0 40rpx;
+  animation: conqueredBounce 0.6s ease 0.4s both;
+}
+
+/* 获得勋章文字 */
+.badge-notice {
+  margin-top: 36rpx;
+  z-index: 1;
+  animation: conqueredBounce 0.5s ease 0.6s both;
+}
+
+.badge-notice-text {
+  color: #f1c40f;
+  font-size: 34rpx;
+  font-weight: 900;
+  letter-spacing: 8rpx;
+  text-shadow: 0 0 20rpx rgba(241, 196, 15, 0.5);
+}
+
+/* 勋章水平排列容器 */
+.medals-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 60rpx;
+  margin-top: 30rpx;
+  z-index: 1;
+}
+
+/* 单个勋章 */
+.medal-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0) rotateY(180deg);
+}
+
+.medal-wrap.show {
+  animation: medalEntry 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes medalEntry {
+  0% {
+    transform: scale(0) rotateY(180deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+.medal-glow {
+  position: absolute;
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  top: -10rpx;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.5) 0%, transparent 70%);
+  animation: medalPulse 2s ease-in-out 1s infinite;
+}
+
+@keyframes medalPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.15;
+  }
+}
+
+.medal-body {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.medal-inner {
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f9d423 0%, #d4af37 30%, #c9a84c 50%, #d4af37 70%, #f9d423 100%);
+  box-shadow:
+    0 0 40rpx rgba(212, 175, 55, 0.7),
+    0 0 80rpx rgba(212, 175, 55, 0.3),
+    inset 0 4rpx 12rpx rgba(255, 255, 255, 0.4);
+  border: 5rpx solid #b8942e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  animation: medalSpin 0.7s ease 0.1s both;
+}
+
+@keyframes medalSpin {
+  0% { transform: rotateY(0deg); }
+  60% { transform: rotateY(360deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.medal-emoji {
+  font-size: 52rpx;
+  line-height: 1;
+}
+
+/* 挑战王者勋章用金色 */
+.challenge-medal-inner {
+  background: linear-gradient(135deg, #f1c40f 0%, #e67e22 30%, #d35400 50%, #e67e22 70%, #f1c40f 100%);
+  box-shadow:
+    0 0 40rpx rgba(241, 196, 15, 0.7),
+    0 0 80rpx rgba(230, 126, 34, 0.3),
+    inset 0 4rpx 12rpx rgba(255, 255, 255, 0.4);
+  border: 5rpx solid #c0392b;
+}
+
+.medal-ribbon {
+  position: absolute;
+  bottom: -16rpx;
+  width: 26rpx;
+  height: 50rpx;
+  z-index: 0;
+}
+
+.medal-ribbon-l {
+  left: 50%;
+  transform: translateX(-30rpx) rotate(-15deg);
+  background: linear-gradient(to bottom, #e74c3c 0%, #c0392b 50%, #a93226 100%);
+  border-radius: 4rpx 4rpx 10rpx 10rpx;
+}
+
+.medal-ribbon-r {
+  left: 50%;
+  transform: translateX(4rpx) rotate(15deg);
+  background: linear-gradient(to bottom, #e74c3c 0%, #c0392b 50%, #a93226 100%);
+  border-radius: 4rpx 4rpx 10rpx 10rpx;
+}
+
+.medal-label {
+  margin-top: 26rpx;
+  color: #d4af37;
+  font-size: 24rpx;
+  font-weight: 700;
+  letter-spacing: 3rpx;
+  text-shadow: 0 0 16rpx rgba(212, 175, 55, 0.4);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.challenge-medal-label {
+  color: #f1c40f;
 }

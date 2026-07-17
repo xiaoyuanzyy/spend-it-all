@@ -6,78 +6,130 @@
         <text class="nav-title">支出账单</text>
       </view>
     </view>
-    <view class="title">
-      <view class="title-period">{{period}}</view>
-      <view class="mode-tag mode-{{mode}}">{{modeLabel}}</view>
+    <view class="header-meta">
+      <text class="header-period">{{period}}</text>
+      <text class="mode-tag mode-{{mode}}">{{modeLabel}}</text>
     </view>
   </view>
 
-  <!-- 富豪信息卡片 -->
-  <view class="billion-card">
-    <view class="billion-avatar">{{billionAvatar || '👑'}}</view>
-    <view class="billion-body">
-      <view class="billion-name">{{billionName}}</view>
-      <view class="billion-assets">资产 {{billionAssets}}</view>
-      <view class="billion-tags" wx:if="{{billionTags.length > 0}}">
-        <text class="b-tag" wx:for="{{billionTags}}" wx:key="*this">{{item}}</text>
+  <!-- 礼花动画层 -->
+  <view class="fireworks-overlay" wx:if="{{showFireworks || showChallengeMedal}}" bindtap="onTapFireworks">
+    <view class="confetti-container" wx:if="{{showFireworks}}">
+      <view wx:for="{{confetti}}" wx:key="id"
+        class="confetti {{item.shape}}"
+        style="left: {{item.left}}%; animation-delay: {{item.delay}}s; animation-duration: {{item.duration}}s; width: {{item.size}}rpx; height: {{item.shape === 'rect' ? item.size * 0.6 : item.size}}rpx; background: {{item.color}}; transform: rotate({{item.rotation}}deg);">
       </view>
-      <view class="billion-quote" wx:if="{{billionCatchphrase}}">"{{billionCatchphrase}}"</view>
+    </view>
+    <view class="conquered-text" wx:if="{{showFireworks}}">{{conqueredText}}</view>
+    <view class="conquered-sub" wx:if="{{showFireworks}}">{{conqueredSub}}</view>
+    <view class="medal-wrap" wx:if="{{showMedal}}">
+      <view class="medal-glow"></view>
+      <view class="medal-body">
+        <view class="medal-ribbon medal-ribbon-l"></view>
+        <view class="medal-ribbon medal-ribbon-r"></view>
+        <view class="medal-inner">
+          <text class="medal-emoji">🏅</text>
+        </view>
+      </view>
+      <view class="medal-label">{{medalLabel}}</view>
+    </view>
+    <view class="challenge-medal-wrap" wx:if="{{showChallengeMedal}}">
+      <view class="challenge-medal-text">⚔️ 挑战胜利 ⚔️</view>
+      <view class="medal-body">
+        <view class="medal-ribbon medal-ribbon-l"></view>
+        <view class="medal-ribbon medal-ribbon-r"></view>
+        <view class="medal-inner challenge-medal-inner">
+          <text class="medal-emoji">👑</text>
+        </view>
+      </view>
+      <view class="medal-label challenge-medal-label">挑战王者勋章</view>
     </view>
   </view>
 
+  <!-- 消费概览卡片：富豪信息 + 花费汇总 -->
+  <view class="spend-hero {{conquered ? 'conquered' : ''}}">
+    <view class="conquered-flag" wx:if="{{conquered}}">🏆 已征服</view>
+
+    <!-- 上段：富豪信息 + 进度环 + 满意度 -->
+    <view class="hero-top">
+      <view class="hero-avatar">{{billionAvatar || '👑'}}</view>
+      <view class="hero-info">
+        <view class="hero-name">{{billionName}}</view>
+        <view class="hero-rating">
+          <text class="rating-stars">{{starsText}}</text>
+          <text class="rating-emoji">{{moodEmoji}}</text>
+        </view>
+        <view class="hero-assets {{remainingAssetsDisplay.indexOf('-') === 0 ? 'overspent' : ''}}">
+          {{assetsLabel}} {{remainingAssetsDisplay}}
+        </view>
+        <view class="hero-tags" wx:if="{{billionTags.length > 0}}">
+          <text class="h-tag" wx:for="{{billionTags}}" wx:key="*this">{{item}}</text>
+        </view>
+        <view class="hero-quote" wx:if="{{billionCatchphrase}}">"{{billionCatchphrase}}"</view>
+      </view>
+      <view class="hero-mood">
+        <view class="progress-ring" style="background: conic-gradient({{isOver ? '#e74c3c' : '#d4af37'}} {{progress > 100 ? 360 : progress * 3.6}}deg, rgba(212,175,55,0.08) 0deg);">
+          <view class="ring-inner">
+            <text class="ring-pct">{{progress}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分割线 -->
+    <view class="hero-divider"></view>
+
+    <!-- 下段：花费汇总 -->
+    <view class="hero-spend">
+      <view class="spend-main">
+        <text class="spend-label">本期花费</text>
+        <text class="spend-amount">{{totalDisplay}}</text>
+      </view>
+      <view class="spend-meta">
+        <text>{{itemTypes}} 种商品</text>
+        <text class="meta-sep">·</text>
+        <text>共 {{totalQty}} 件</text>
+        <text class="meta-sep">·</text>
+        <text class="{{isOver ? 'over' : 'under'}}">
+          {{isOver ? '超出 ' + overDisplay : '剩余 ' + remainingDisplay}}
+        </text>
+      </view>
+      <view class="spend-medals {{showAchievements ? 'show' : ''}}" wx:if="{{conqueredMedalName || challengeMedalWon}}">
+        <view class="sm-item" wx:if="{{conqueredMedalName}}">🏅 {{conqueredMedalName}}</view>
+        <view class="sm-item challenge" wx:if="{{challengeMedalWon}}">👑 挑战王者勋章</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 商品清单 -->
   <scroll-view scroll-y class="scroll-area" enhanced show-scrollbar="{{false}}" style="height: {{scrollHeight}}px;">
     <view class="table">
       <view class="table-header">
-        <view class="col-name">商品</view>
-        <view class="col-qty">数量</view>
-        <view class="col-price">单价</view>
+        <text class="col-name">商品</text>
+        <text class="col-qty">数量</text>
+        <text class="col-price">单价</text>
       </view>
       <block wx:for="{{items}}" wx:key="id">
-        <view class="table-row">
-          <view class="col-name">{{item.name}}</view>
-          <view class="col-qty">{{item.qty}}</view>
-          <view class="col-price">{{item.unitPriceDisplay}}</view>
+        <view class="table-row {{index % 2 === 1 ? 'striped' : ''}}">
+          <text class="col-name">{{item.name}}</text>
+          <text class="col-qty">x{{item.qty}}</text>
+          <text class="col-price">{{item.unitPriceDisplay}}</text>
         </view>
       </block>
     </view>
   </scroll-view>
 
-  <view class="bottom-fixed" id="bill-bottom">
-    <view class="summary">
-      <view class="summary-label">总花费</view>
-      <view class="summary-amount">{{totalDisplay}}</view>
-      <view class="summary-stats">
-        <text>商品 {{itemTypes}} 种</text>
-        <text class="stats-sep">|</text>
-        <text>共 {{totalQty}} 件</text>
-      </view>
-      <view class="summary-over {{isOver ? '' : 'normal'}}">
-        <block wx:if="{{isOver}}">超出预算 超额 {{overDisplay}}</block>
-        <block wx:else>没有超出预算 还差 {{remainingDisplay}}</block>
-      </view>
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" id="bill-bottom">
+    <view class="btn-challenge-result" wx:if="{{showChallengeResult}}" bindtap="onViewChallengeResult">
+      <text wx:if="{{challengeAllDone}}">🏆 查看挑战结果</text>
+      <text wx:else>⏳ 等待对手完成…</text>
+    </view>
+    <view class="btn-row">
+      <view class="btn-replay" bindtap="onReplay">↻ 再来一局</view>
+      <button class="btn-share" open-type="share">↑ 分享报告</button>
+      <view class="btn-history" bindtap="onHistory">📋 历史账单</view>
     </view>
 
-    <view class="status-box">
-      <view class="satisfy-meta">亿万富豪满意度</view>
-      <view class="satisfy-row">
-        <view class="satisfy-stars">{{starsText}}</view>
-        <view class="satisfy-emoji">{{moodEmoji}}</view>
-        <view class="satisfy-progress {{isOver ? 'over' : ''}}">{{progress}}%</view>
-      </view>
-    </view>
-
-    <view class="bottom-bar">
-      <view class="btn-replay" bindtap="onReplay">
-        <text>↻</text>
-        <text>再来一局</text>
-      </view>
-      <view class="btn-share" bindtap="onShare">
-        <text>↑</text>
-        <text>分享报告</text>
-      </view>
-    </view>
-    <view class="history-bar">
-      <view class="btn-history" bindtap="onHistory">查看历史账单</view>
-    </view>
   </view>
 </view>

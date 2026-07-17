@@ -1,16 +1,12 @@
 // app.js
-const cloud = require('./utils/cloud.js');
-
 App({
   globalData: {
     userInfo: null,
     openid: null,
     currentBillionaire: null,
     currentMode: 'normal', // normal | timed | challenge
-    cart: [], // [{ productId, qty, price, name }]
     budget: 50000000,
     spent: 0,
-    selectedBillionaireId: null,
     roomCode: null
   },
 
@@ -64,8 +60,4 @@ App({
     });
   },
 
-  // 震动反馈
-  vibrateShort() {
-    wx.vibrateShort({ type: 'medium' });
-  }
 });

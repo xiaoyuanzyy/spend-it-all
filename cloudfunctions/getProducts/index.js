@@ -10,17 +10,27 @@ exports.main = async (event) => {
 
   // 从数据库读取富豪匹配标签（优先 matchTags，兼容旧数据回退 tags）
   try {
-    const bRes = await db.collection('billionaires').doc(String(billionaireId)).get();
+    const bRes = await db.collection('billionaires').doc(billionaireId).get();
     if (bRes.data) {
-      tags = bRes.data.matchTags || bRes.data.tags || [];
+      tags = (bRes.data.matchTags && bRes.data.matchTags.length) ? bRes.data.matchTags : (bRes.data.tags || []);
     }
+    console.log('[getProducts] billionaireId:', billionaireId, 'tags:', JSON.stringify(tags));
   } catch (e) {
-    console.warn('读取富豪标签失败', e.message);
+    console.warn('[getProducts] 读取富豪标签失败', billionaireId, e.message);
   }
 
   // 从数据库读取全部商品并匹配排序
   try {
-    const res = await db.collection('products').limit(100).get();
+    // 分页读取全部商品（商品池已扩展至数千件）
+    const countRes = await db.collection('products').count();
+    const total = countRes.total;
+    let allProducts = [];
+    const pageSize = 100;
+    for (let offset = 0; offset < total; offset += pageSize) {
+      const page = await db.collection('products').skip(offset).limit(pageSize).get();
+      allProducts = allProducts.concat(page.data || []);
+    }
+    const res = { data: allProducts };
     if (res.data && res.data.length > 0) {
       const scored = res.data.map(p => ({
         ...p,
@@ -28,36 +38,44 @@ exports.main = async (event) => {
         score: (p.tags || []).filter(pt => tags.includes(pt)).length
       }));
 
-      // 80% 匹配 + 20% 不匹配
+      // 9:1 比例：匹配商品上限 90 件，不匹配 = 匹配 / 9
+      const MAX_MATCHED = 90;
+
       const matched = scored.filter(p => p.score > 0);
       const unmatched = scored.filter(p => p.score === 0);
 
-      // 按匹配分降序排列匹配商品
-      matched.sort((a, b) => b.score - a.score);
-      // 随机打乱不匹配商品，保证每次不重复
-      unmatched.sort(() => Math.random() - 0.5);
+      console.log('[getProducts] 匹配池:', matched.length, '不匹配池:', unmatched.length);
+
+      // Fisher-Yates 随机打乱
+      const shuffle = (arr) => {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      };
+
+      shuffle(matched);
+      shuffle(unmatched);
+
+      // 从匹配商品中随机取，上限 90 件
+      const pickCount = Math.min(MAX_MATCHED, matched.length);
+      const pickedMatched = matched.slice(0, pickCount);
 
       let list;
-      if (matched.length === 0) {
-        // 没有匹配商品：全部返回（数据库可能尚未更新 matchTags）
-        list = unmatched;
+      if (pickedMatched.length === 0) {
+        // 无匹配商品时兜底
+        list = unmatched.slice(0, Math.min(100, unmatched.length));
+        console.log('[getProducts] 无匹配商品，兜底返回', list.length, '件不匹配商品');
       } else {
-        // 不匹配数量 = 匹配数量 / 4（即 20%:80%）
-        const unmatchCount = Math.max(1, Math.round(matched.length * 0.25));
+        // 按 9:1 比例取不匹配商品
+        const unmatchCount = Math.round(pickedMatched.length / 9);
         const pickedUnmatched = unmatched.slice(0, unmatchCount);
 
-        // 交替插入：每 4 个匹配商品后插入 1 个不匹配商品
-        list = [];
-        let mi = 0, ui = 0;
-        while (mi < matched.length || ui < pickedUnmatched.length) {
-          for (let i = 0; i < 4 && mi < matched.length; i++, mi++) {
-            list.push(matched[mi]);
-          }
-          if (ui < pickedUnmatched.length) {
-            list.push(pickedUnmatched[ui]);
-            ui++;
-          }
-        }
+        // 合并后随机打乱
+        list = [...pickedMatched, ...pickedUnmatched];
+        shuffle(list);
+        console.log('[getProducts] 匹配:', pickedMatched.length, '不匹配:', pickedUnmatched.length, '总计:', list.length);
       }
 
       return { list };

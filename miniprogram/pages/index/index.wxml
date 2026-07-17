@@ -57,6 +57,10 @@
   <view class="hint">点击转盘，随机抽取一位富豪…</view>
   <view class="hint">下拉页面，换一批富豪…</view>
 
+  <view class="feedback-entry" bindtap="onFeedback">
+    <text>💬 我要留言</text>
+  </view>
+
   <!-- 富豪简介卡片 -->
   <view class="profile-overlay {{showProfile ? 'show' : ''}}" catchtap="onCloseProfile">
     <view class="profile-card" catchtap="noop">

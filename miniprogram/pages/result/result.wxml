@@ -1,4 +1,51 @@
 <view class="page">
+  <!-- 礼花 + 勋章动画层 -->
+  <view class="fireworks-overlay" wx:if="{{showFireworks || showMedal1 || showMedal2}}" bindtap="onTapOverlay">
+    <view class="confetti-container" wx:if="{{showFireworks}}">
+      <view wx:for="{{confetti}}" wx:key="id"
+        class="confetti {{item.shape}}"
+        style="left: {{item.left}}%; animation-delay: {{item.delay}}s; animation-duration: {{item.duration}}s; width: {{item.size}}rpx; height: {{item.shape === 'rect' ? item.size * 0.6 : item.size}}rpx; background: {{item.color}}; transform: rotate({{item.rotation}}deg);">
+      </view>
+    </view>
+    <view class="hero-text">{{heroText}}</view>
+    <view class="hero-sub">{{heroSub}}</view>
+
+    <!-- 获得勋章文字 -->
+    <view class="badge-notice" wx:if="{{showMedal1}}">
+      <text class="badge-notice-text">获得勋章</text>
+    </view>
+
+    <!-- 勋章容器：水平排列 -->
+    <view class="medals-row">
+      <!-- 勋章1：征服富豪 / 挥霍大师 -->
+      <view class="medal-wrap {{showMedal1 ? 'show' : ''}}">
+        <view class="medal-glow"></view>
+        <view class="medal-body">
+          <view class="medal-ribbon medal-ribbon-l"></view>
+          <view class="medal-ribbon medal-ribbon-r"></view>
+          <view class="medal-inner">
+            <text class="medal-emoji">🏅</text>
+          </view>
+        </view>
+        <view class="medal-label">{{medal1Label}}</view>
+      </view>
+
+      <!-- 勋章2：挑战王者（仅胜利者） -->
+      <view class="medal-wrap {{showMedal2 ? 'show' : ''}}" wx:if="{{isWinner}}">
+        <view class="medal-glow"></view>
+        <view class="medal-body">
+          <view class="medal-ribbon medal-ribbon-l"></view>
+          <view class="medal-ribbon medal-ribbon-r"></view>
+          <view class="medal-inner challenge-medal-inner">
+            <text class="medal-emoji">👑</text>
+          </view>
+        </view>
+        <view class="medal-label challenge-medal-label">{{medal2Label}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主体内容 -->
   <view class="status-bar">9:41</view>
 
   <view class="header-row">
@@ -21,7 +68,7 @@
   <view class="rank-section">
     <view class="rank-title">排行榜</view>
     <block wx:for="{{ranking}}" wx:key="slot">
-      <view class="rank-card">
+      <view class="rank-card {{isWinner && item.rank === 1 ? 'rank-self-winner' : ''}}">
         <view class="rank-no">{{item.rank}}</view>
         <view class="rank-avatar">{{item.nickname[0]}}</view>
         <view class="rank-name">{{item.nickname}}</view>

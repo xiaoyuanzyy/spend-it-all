@@ -19,9 +19,9 @@
           <view class="budget-amount">{{budgetDisplay}}</view>
           <view class="budget-percent">
             <view class="percent-bar">
-              <view class="percent-fill" style="width: {{budgetPercent}}%;"></view>
+              <view class="percent-fill" style="width: {{budgetPercent > 0 ? budgetPercent : 0}}%;"></view>
             </view>
-            <text class="percent-text">{{budgetPercent}}%</text>
+            <text class="percent-text {{budgetPercent < 0 ? 'over' : ''}}">{{budgetPercent}}%</text>
           </view>
         </view>
       </view>

@@ -6,7 +6,7 @@ const db = cloud.database();
 
 exports.main = async () => {
   try {
-    const res = await db.collection('billionaires').limit(50).get();
+    const res = await db.collection('billionaires').limit(200).get();
     if (res.data && res.data.length > 0) {
       return { list: res.data };
     }

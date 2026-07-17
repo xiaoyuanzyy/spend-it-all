@@ -39,7 +39,15 @@ function formatM(num) {
 
 function formatFull(num) {
   if (num === null || num === undefined) return '$0';
-  return '$' + Math.floor(num).toLocaleString('en-US');
+  const sign = num < 0 ? '-' : '';
+  return sign + '$' + Math.floor(Math.abs(num)).toLocaleString('en-US');
+}
+
+// 外国人名取"·"最后一段展示："埃隆·马斯克" → "马斯克"；中文名保持不变
+function shortName(name) {
+  if (!name) return name;
+  const parts = name.split('·');
+  return parts[parts.length - 1];
 }
 
 module.exports = {
@@ -48,5 +56,6 @@ module.exports = {
   formatFull,
   formatCNY,
   formatK,
-  today
+  today,
+  shortName
 };

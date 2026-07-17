@@ -10,22 +10,31 @@
     </view>
 
     <view class="user-card">
-      <view class="avatar">{{user.avatar}}</view>
+      <view class="avatar-wrap" bindtap="onAvatarTap">
+        <image class="avatar-img" wx:if="{{avatarUrl}}" src="{{avatarUrl}}" mode="aspectFill"></image>
+        <view class="avatar avatar-text" wx:else>{{user.avatar}}</view>
+        <view class="avatar-overlay">📷</view>
+      </view>
       <view class="user-info">
-        <view class="name-row">
+        <view class="name-row" wx:if="{{!editing}}">
           <text class="nickname">{{user.nickname}}</text>
           <text class="edit-icon" bindtap="onEdit">✎</text>
         </view>
+        <view class="name-row edit-row" wx:else>
+          <input class="nickname-input" value="{{editNickname}}" placeholder="输入昵称" maxlength="20" bindinput="onNicknameInput" focus="{{true}}" />
+          <text class="save-btn" bindtap="onSaveNickname">{{saving ? '...' : '✓'}}</text>
+          <text class="cancel-btn" bindtap="onCancelEdit">✕</text>
+        </view>
         <view class="vip">VIP No. {{user.vip}}</view>
-        <view class="role-badge">{{user.role}}</view>
       </view>
+      <view class="role-badge">{{user.role}}</view>
     </view>
 
     <view class="stats-card">
       <view class="stat">
         <text class="stat-icon">⭐</text>
-        <text class="stat-value">{{stats.rescued}}</text>
-        <text class="stat-label">拯救富豪</text>
+        <text class="stat-value">{{stats.conquered}}</text>
+        <text class="stat-label">征服富豪</text>
       </view>
       <view class="stat-divider"></view>
       <view class="stat">
@@ -71,7 +80,10 @@
                 </block>
                 <text wx:if="{{item.productCount > 3}}" class="bill-more"> 等{{item.productCount}}种</text>
               </view>
-              <view class="delete-btn" bindtap="onDelete" data-id="{{item._id}}">🗑 删除</view>
+              <view class="bill-actions-right">
+                <view class="view-btn" bindtap="onViewBill" data-idx="{{index}}">查看</view>
+                <view class="delete-btn" bindtap="onDelete" data-id="{{item._id}}">🗑 删除</view>
+              </view>
             </view>
           </view>
         </block>
@@ -92,5 +104,6 @@
       <text>[→</text>
       <text>退休·卸任富豪助理</text>
     </view>
+    <view class="feedback-link" bindtap="onFeedback">我要留言</view>
   </view>
 </view>

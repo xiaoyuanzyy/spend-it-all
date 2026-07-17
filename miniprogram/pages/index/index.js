@@ -1,6 +1,7 @@
 // pages/index/index.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
+const { shortName } = require('../../utils/format.js');
 
 // 20 色转盘调色板
 const COLOR_PALETTE = [
@@ -55,12 +56,8 @@ Page({
     let list = [];
     try {
       const res = await cloud.getBillionaire();
-      console.log('[index] getBillionaire 返回条数:', res?.list?.length);
       if (res && res.list && res.list.length > 0) {
         list = res.list;
-        // 打印第一条看看有没有 nationality
-        console.log('[index] 第一条富豪keys:', Object.keys(list[0]));
-        console.log('[index] 第一条富豪数据:', JSON.stringify(list[0]));
       }
     } catch (e) {
       console.warn('拉取富豪失败', e);
@@ -90,8 +87,9 @@ Page({
       const rad = (centerAngle * Math.PI) / 180;
       const textLeft = Math.round(cx + textR * Math.sin(rad));   // CSS x = cx + r·sin(θ)
       const textTop  = Math.round(cy - textR * Math.cos(rad));    // CSS y = cy - r·cos(θ)
+      const displayName = shortName(b.name);
       return {
-        name: b.name,
+        name: displayName,
         nationality: b.nationality || '',
         color: COLOR_PALETTE[i % COLOR_PALETTE.length],
         textLeft,
@@ -151,21 +149,18 @@ Page({
       this.setData({ spinning: false });
 
       const billionaire = this.data.billionaireList[idx];
-      console.log('[index] selected billionaire:', JSON.stringify(billionaire));
-      console.log('[index] nationality value:', billionaire.nationality, 'type:', typeof billionaire.nationality);
       const sel = this.data.sectors[idx];
       if (!billionaire) return;
 
-      // 完整富豪数据存到全局
-      app.globalData.selectedBillionaireId = billionaire._id;
+      const matchTags = (billionaire.matchTags && billionaire.matchTags.length) ? billionaire.matchTags : (billionaire.tags || []);
       app.globalData.currentBillionaire = {
-        id: parseInt(billionaire._id, 10),
+        id: billionaire._id,  // 云数据库 _id 是字符串，不能 parseInt
         name: billionaire.name,
         nationality: billionaire.nationality,
         companies: billionaire.companies,
         assets: billionaire.assets,
         tags: billionaire.tags,
-        matchTags: billionaire.matchTags || [],
+        matchTags: matchTags,
         catchphrase: billionaire.catchphrase,
         avatar: billionaire.avatar
       };
@@ -189,6 +184,10 @@ Page({
     wx.navigateTo({ url: '/pages/profile/profile' });
   },
 
+  onFeedback() {
+    wx.navigateTo({ url: '/pages/feedback/feedback' });
+  },
+
   // 关闭富豪简介卡片
   onCloseProfile() {
     this.setData({ showProfile: false });
@@ -199,7 +198,6 @@ Page({
     app.globalData.currentMode = 'timed';
     app.globalData.budget = app.globalData.currentBillionaire.assets;
     app.globalData.spent = 0;
-    app.globalData.cart = [];
     wx.redirectTo({ url: '/pages/shop-normal/shop-normal' });
   },
 
@@ -214,7 +212,6 @@ Page({
     app.globalData.currentMode = 'normal';
     app.globalData.budget = app.globalData.currentBillionaire.assets;
     app.globalData.spent = 0;
-    app.globalData.cart = [];
     wx.redirectTo({ url: '/pages/shop-normal/shop-normal' });
   },
 

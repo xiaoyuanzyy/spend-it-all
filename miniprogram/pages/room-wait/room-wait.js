@@ -103,8 +103,7 @@ Page({
       app.globalData.budget = b.assets;
     }
     app.globalData.spent = 0;
-    app.globalData.cart = [];
-    wx.redirectTo({ url: '/pages/shop-timed/shop-timed' });
+    wx.redirectTo({ url: '/pages/shop-normal/shop-normal' });
   },
 
   async syncBillionaireFromRoom() {

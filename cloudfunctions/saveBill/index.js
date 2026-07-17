@@ -25,7 +25,8 @@ exports.main = async (event) => {
     total: event.total || 0,
     budget: event.budget || 0,
     over: event.over || 0,
-    success: !!event.success,
+    // success: null = 非挑战模式不适用, true/false = 挑战胜负
+    success: event.success != null ? event.success : null,
     mode: event.mode || 'normal',
     createdAt: event.createdAt || Date.now()
   };

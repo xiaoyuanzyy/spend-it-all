@@ -1,7 +1,7 @@
 // pages/shop-normal/shop-normal.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, formatFull, formatM } = require('../../utils/format.js');
+const { formatMoney, formatFull, formatM, shortName } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -36,7 +36,7 @@ Page({
   onLoad() {
     const b = app.globalData.currentBillionaire || { name: '富豪', tags: [] };
     const isTimed = app.globalData.currentMode === 'timed';
-    this.setData({ billionaire: b, isTimed });
+    this.setData({ billionaire: { ...b, name: shortName(b.name) }, isTimed });
     this.loadProducts(b);
     const budget = app.globalData.budget || 50000000;
     this.setData({
@@ -68,7 +68,6 @@ Page({
     const id = (billionaire && billionaire.id != null) ? billionaire.id : 0;
     try {
       const res = await cloud.getProducts(id);
-      console.log('[shop-normal] getProducts 返回', res && res.list && res.list.length, '件');
       if (res && res.list && res.list.length > 0) {
         // 统一 _id → id，确保置办按钮能匹配
         let list = res.list.map(p => {
@@ -89,7 +88,6 @@ Page({
           loadedCount: firstPage.length,
           totalCount: list.length
         });
-        console.log('[shop-normal] 首次展示', firstPage.length, '/', list.length, 'hasMore:', list.length > this.data.pageSize);
         return;
       }
     } catch (e) {
@@ -110,10 +108,8 @@ Page({
 
   loadMore() {
     if (!this.data.hasMore || this.data.loadingMore) {
-      console.log('[shop-normal] loadMore 跳过 hasMore:', this.data.hasMore, 'loadingMore:', this.data.loadingMore);
       return;
     }
-    console.log('[shop-normal] 加载更多...');
     this.setData({ loadingMore: true });
 
     setTimeout(() => {
@@ -144,7 +140,6 @@ Page({
         loadingMore: false,
         loadedCount: merged.length
       });
-      console.log('[shop-normal] 已加载', merged.length, '/', this.data.allProducts.length);
     }, 300);
   },
 
@@ -170,7 +165,7 @@ Page({
         });
       }
     });
-    const remaining = Math.max(0, this.data.budget - total);
+    const remaining = this.data.budget - total;
     const percent = this.data.budget > 0 ? Math.round(remaining / this.data.budget * 100) : 0;
     app.globalData.cart = cart;
     app.globalData.spent = total;
@@ -193,7 +188,7 @@ Page({
     if (!product) return;
 
     const b = this.data.billionaire;
-    const matchTags = (b && b.matchTags) || [];
+    const matchTags = (b && b.matchTags && b.matchTags.length) ? b.matchTags : ((b && b.tags) || []);
     const matched = (product.tags || []).some(pt => matchTags.includes(pt));
 
     // 与富豪不匹配的商品点击时震动提示
@@ -203,6 +198,11 @@ Page({
 
     // 只有符合品味才买入
     if (matched) {
+      // 单商品限购 30 件
+      if ((product.purchased || 0) >= 30) {
+        wx.showToast({ title: '一个商品最多买30件', icon: 'none', duration: 1500 });
+        return;
+      }
       const products = this.data.products.map(p =>
         String(p.id) === String(id)
           ? { ...p, purchased: (p.purchased || 0) + 1 }
@@ -228,21 +228,69 @@ Page({
   },
 
   onConfirm() {
+    // 普通模式下，没有选择任何商品时提示
+    if (!this.data.isTimed && this.data.totalQty === 0) {
+      wx.showToast({ title: '还没置办商品，快去逛逛吧', icon: 'none', duration: 2000 });
+      return;
+    }
     if (this.data.timer) clearInterval(this.data.timer);
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
-    const success = total >= budget * 0.9;
-    // 用页面 data 而非 globalData，避免生命周期中的竞态
-    const mode = this.data.isTimed ? 'timed' : 'normal';
+    const currentMode = app.globalData.currentMode || 'normal';
+    const mode = this.data.isTimed ? 'timed' : (currentMode === 'challenge' ? 'challenge' : 'normal');
+
+    // 挑战模式：先提交房间结果，云函数会判定胜负并写入数据库
+    if (currentMode === 'challenge') {
+      this.submitChallengeAndGo(total, budget, mode);
+      return;
+    }
+
+    // normal/timed：success 为空（不适用）
     app.globalData.billResult = {
       total,
       budget,
-      success,
+      success: null,
       billionaire: this.data.billionaire,
       products: this.data.cart,
       mode
     };
     wx.redirectTo({ url: '/pages/bill/bill' });
+  },
+
+  // 挑战模式：提交结果 → 云函数判定胜负
+  async submitChallengeAndGo(total, budget, mode) {
+    wx.showLoading({ title: '提交结果中…' });
+    try {
+      const res = await cloud.submitRoomResult({
+        code: app.globalData.roomCode,
+        amount: total
+      });
+      wx.hideLoading();
+
+      // 存储挑战结果（结算页面用）
+      app.globalData.challengeResult = res;
+
+      // 判定胜负：只有全部玩家都提交了才能确定，否则留待云函数后续更新
+      let success = null;
+      if (res.allDone && res.players) {
+        // 从自己的花费对比最高花费来推断胜负
+        const maxAmount = Math.max(...res.players.map(p => p.amount || 0));
+        success = total >= maxAmount;
+      }
+
+      app.globalData.billResult = {
+        total,
+        budget,
+        success,
+        billionaire: this.data.billionaire,
+        products: this.data.cart,
+        mode
+      };
+      wx.redirectTo({ url: '/pages/bill/bill' });
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: '提交失败，请重试', icon: 'none' });
+    }
   },
 
   // 倒计时
@@ -265,9 +313,16 @@ Page({
   onAutoConfirm() {
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
-    const success = total >= budget * 0.9;
-    // 用页面 data 而非 globalData，避免生命周期中的竞态
-    const mode = this.data.isTimed ? 'timed' : 'normal';
+    const currentMode = app.globalData.currentMode || 'normal';
+    const mode = this.data.isTimed ? 'timed' : (currentMode === 'challenge' ? 'challenge' : 'normal');
+
+    // 挑战模式：提交房间结果
+    if (currentMode === 'challenge') {
+      this.submitChallengeAndGo(total, budget, mode);
+      return;
+    }
+
+    const success = null;
     app.globalData.billResult = {
       total,
       budget,

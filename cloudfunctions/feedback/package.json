@@ -1,7 +1,7 @@
 {
-  "name": "initDatabase",
+  "name": "feedback",
   "version": "1.0.0",
-  "description": "初始化数据库集合并插入 mock 数据",
+  "description": "留言提交与查询",
   "main": "index.js",
   "dependencies": {
     "wx-server-sdk": "~2.6.3"

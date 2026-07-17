@@ -20,13 +20,6 @@
           "query": "",
           "scene": null,
           "launchMode": "default"
-        },
-        {
-          "name": "给商品配图",
-          "pathName": "pages/admin/admin",
-          "query": "",
-          "launchMode": "default",
-          "scene": null
         }
       ]
     }

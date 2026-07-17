@@ -139,6 +139,10 @@
   text-align: right;
 }
 
+.percent-text.over {
+  color: #e74c3c;
+}
+
 /* 倒计时（仅限时模式） */
 .timer {
   padding: 0 32rpx 24rpx;

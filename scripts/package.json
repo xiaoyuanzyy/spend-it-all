@@ -1,0 +1,8 @@
+{
+  "name": "spend-it-all-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.0.0"
+  }
+}
