@@ -34,7 +34,7 @@
     <view class="wheel" style="transform: rotate({{rotateDeg}}deg); {{wheelConicGradient}}">
       <block wx:for="{{sectors}}" wx:key="name">
         <text class="segment-text" style="left: {{item.textLeft}}rpx; top: {{item.textTop}}rpx; transform: translate(-50%, -50%);">{{item.name}}</text>
-        <text class="segment-nation" style="left: {{item.textLeft}}rpx; top: {{item.textTop + 28}}rpx; transform: translate(-50%, -50%);">{{item.nationality}}</text>
+        <text class="segment-nation" style="left: {{item.textLeft}}rpx; top: {{item.textTop + 28}}rpx; transform: translate(-50%, -50%);">({{item.nationality}})</text>
       </block>
     </view>
     <view class="wheel-inner">

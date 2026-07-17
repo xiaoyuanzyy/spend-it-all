@@ -42,30 +42,30 @@
     </view>
   </scroll-view>
 
-  <view class="summary" id="bill-summary">
-    <view class="summary-label">总花费</view>
-    <view class="summary-amount">{{totalDisplay}}</view>
-    <view class="summary-stats">
-      <text>商品 {{itemTypes}} 种</text>
-      <text class="stats-sep">|</text>
-      <text>共 {{totalQty}} 件</text>
-    </view>
-    <view class="summary-over {{isOver ? '' : 'normal'}}">
-      <block wx:if="{{isOver}}">超出预算 超额 {{overDisplay}}</block>
-      <block wx:else>没有超出预算 还差 {{remainingDisplay}}</block>
-    </view>
-  </view>
-
-  <view class="status-box" id="bill-status">
-    <view class="satisfy-meta">亿万富豪满意度</view>
-    <view class="satisfy-row">
-      <view class="satisfy-stars">{{starsText}}</view>
-      <view class="satisfy-emoji">{{moodEmoji}}</view>
-      <view class="satisfy-progress {{isOver ? 'over' : ''}}">{{progress}}%</view>
-    </view>
-  </view>
-
   <view class="bottom-fixed" id="bill-bottom">
+    <view class="summary">
+      <view class="summary-label">总花费</view>
+      <view class="summary-amount">{{totalDisplay}}</view>
+      <view class="summary-stats">
+        <text>商品 {{itemTypes}} 种</text>
+        <text class="stats-sep">|</text>
+        <text>共 {{totalQty}} 件</text>
+      </view>
+      <view class="summary-over {{isOver ? '' : 'normal'}}">
+        <block wx:if="{{isOver}}">超出预算 超额 {{overDisplay}}</block>
+        <block wx:else>没有超出预算 还差 {{remainingDisplay}}</block>
+      </view>
+    </view>
+
+    <view class="status-box">
+      <view class="satisfy-meta">亿万富豪满意度</view>
+      <view class="satisfy-row">
+        <view class="satisfy-stars">{{starsText}}</view>
+        <view class="satisfy-emoji">{{moodEmoji}}</view>
+        <view class="satisfy-progress {{isOver ? 'over' : ''}}">{{progress}}%</view>
+      </view>
+    </view>
+
     <view class="bottom-bar">
       <view class="btn-replay" bindtap="onReplay">
         <text>↻</text>

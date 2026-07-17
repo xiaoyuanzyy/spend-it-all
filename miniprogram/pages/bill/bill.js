@@ -98,16 +98,14 @@ Page({
     const sys = wx.getSystemInfoSync();
     this.setData({ statusBarHeight: sys.statusBarHeight || 44 });
 
-    // 测量所有固定区域高度，计算商品表格滚动区可用高度
+    // 测量固定区域高度：header + 富豪卡片 + 底部固定区
     const query = wx.createSelectorQuery();
-    let headerH = 0, cardH = 0, summaryH = 0, statusH = 0, bottomH = 0;
+    let headerH = 0, cardH = 0, bottomH = 0;
     query.select('#bill-header').boundingClientRect(rect => { if (rect) headerH = rect.height; });
     query.select('.billion-card').boundingClientRect(rect => { if (rect) cardH = rect.height + 20; });
-    query.select('#bill-summary').boundingClientRect(rect => { if (rect) summaryH = rect.height; });
-    query.select('#bill-status').boundingClientRect(rect => { if (rect) statusH = rect.height; });
     query.select('#bill-bottom').boundingClientRect(rect => { if (rect) bottomH = rect.height; });
     query.exec(() => {
-      const h = sys.windowHeight - headerH - cardH - summaryH - statusH - bottomH - 60;
+      const h = sys.windowHeight - headerH - cardH - bottomH - 20;
       if (h > 0) this.setData({ scrollHeight: h });
     });
   },

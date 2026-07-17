@@ -14,7 +14,9 @@ Page({
     stats: { rescued: 3, spent: 88879000, badges: 5, spentDisplay: '0' },
     bills: [],
     expandedIndex: -1,
-    statusBarHeight: 44
+    statusBarHeight: 44,
+    scrollHeight: 400,
+    scrollTop: 200
   },
 
   onLoad() {
@@ -25,6 +27,18 @@ Page({
 
   onShow() {
     this.loadBills();
+  },
+
+  onReady() {
+    const sys = wx.getSystemInfoSync();
+    const query = wx.createSelectorQuery();
+    let topH = 0, bottomH = 0;
+    query.select('#profile-top').boundingClientRect(rect => { if (rect) topH = rect.height; });
+    query.select('.retire-fixed').boundingClientRect(rect => { if (rect) bottomH = rect.height; });
+    query.exec(() => {
+      const h = sys.windowHeight - topH - bottomH;
+      if (h > 0) this.setData({ scrollTop: topH, scrollHeight: h });
+    });
   },
 
   formatDate(ts) {

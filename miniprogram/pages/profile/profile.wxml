@@ -1,83 +1,91 @@
 <view class="page">
-  <view class="header-row" style="padding-top: {{statusBarHeight}}px;">
-    <view class="nav-back" bindtap="onBack">←</view>
-    <view class="title">
-      <text>我的档案</text>
-      <text class="title-icon">👑</text>
-    </view>
-  </view>
-
-  <view class="user-card">
-    <view class="avatar">{{user.avatar}}</view>
-    <view class="user-info">
-      <view class="name-row">
-        <text class="nickname">{{user.nickname}}</text>
-        <text class="edit-icon" bindtap="onEdit">✎</text>
+  <!-- 顶部固定区域：导航 + 用户信息 + 统计数据 -->
+  <view class="top-fixed" id="profile-top">
+    <view class="header-row" style="padding-top: {{statusBarHeight}}px;">
+      <view class="nav-back" bindtap="onBack">←</view>
+      <view class="title">
+        <text>我的档案</text>
+        <text class="title-icon">👑</text>
       </view>
-      <view class="vip">VIP No. {{user.vip}}</view>
-      <view class="role-badge">{{user.role}}</view>
     </view>
-  </view>
 
-  <view class="stats-card">
-    <view class="stat">
-      <text class="stat-icon">⭐</text>
-      <text class="stat-value">{{stats.rescued}}</text>
-      <text class="stat-label">拯救富豪</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat">
-      <text class="stat-icon">$</text>
-      <text class="stat-value">{{stats.spentDisplay}}</text>
-      <text class="stat-label">挥霍金额</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat">
-      <text class="stat-icon">⚡</text>
-      <text class="stat-value">{{stats.badges}}</text>
-      <text class="stat-label">成就徽章</text>
-    </view>
-  </view>
-
-  <view class="history-row">
-    <view class="history-title">历史账单</view>
-    <view class="clear-btn" bindtap="onClear">🗑 清空记录</view>
-  </view>
-
-  <block wx:if="{{bills.length > 0}}">
-    <block wx:for="{{bills}}" wx:key="_id">
-      <view class="bill-card">
-        <view class="bill-head">
-          <text class="bill-name">{{item.billionaireName || '富豪'}}</text>
-          <text class="bill-amount">{{item.amountDisplay}}</text>
+    <view class="user-card">
+      <view class="avatar">{{user.avatar}}</view>
+      <view class="user-info">
+        <view class="name-row">
+          <text class="nickname">{{user.nickname}}</text>
+          <text class="edit-icon" bindtap="onEdit">✎</text>
         </view>
-        <view class="bill-meta">
-          <text>第{{item.period}}期 · {{item.timeDisplay}}</text>
-          <view class="bill-meta-right">
-            <text class="mode-badge mode-{{item.modeKey}}">{{item.modeLabel}}</text>
-            <text class="progress-tag {{item.isOver ? 'over' : ''}}">{{item.isOver ? '已超预算' : item.progress + '%'}}</text>
-          </view>
-        </view>
-        <view class="bill-actions">
-          <view class="bill-items">
-            <block wx:for="{{item.topProducts}}" wx:for-item="p" wx:key="id">
-              {{p.name}}×{{p.qty}}<block wx:if="{{!last}}"> </block>
-            </block>
-            <text wx:if="{{item.productCount > 3}}" class="bill-more"> 等{{item.productCount}}种</text>
-          </view>
-          <view class="delete-btn" bindtap="onDelete" data-id="{{item._id}}">🗑 删除</view>
-        </view>
+        <view class="vip">VIP No. {{user.vip}}</view>
+        <view class="role-badge">{{user.role}}</view>
       </view>
-    </block>
-  </block>
+    </view>
 
-  <view class="empty" wx:else>
-    <view class="empty-illust">😶</view>
-    <view class="empty-text">暂无消费记录</view>
-    <view class="empty-sub">快去拯救富豪吧！</view>
+    <view class="stats-card">
+      <view class="stat">
+        <text class="stat-icon">⭐</text>
+        <text class="stat-value">{{stats.rescued}}</text>
+        <text class="stat-label">拯救富豪</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat">
+        <text class="stat-icon">$</text>
+        <text class="stat-value">{{stats.spentDisplay}}</text>
+        <text class="stat-label">挥霍金额</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat">
+        <text class="stat-icon badge-icon">♦</text>
+        <text class="stat-value">{{stats.badges}}</text>
+        <text class="stat-label">成就徽章</text>
+      </view>
+    </view>
+
+    <view class="history-row">
+      <view class="history-title">历史账单</view>
+      <view class="clear-btn" bindtap="onClear">🗑 清空记录</view>
+    </view>
   </view>
 
-  <view style="height: 160rpx;"></view>
+  <!-- 可滚动账单区域 -->
+  <scroll-view scroll-y class="bill-scroll" enhanced show-scrollbar="{{false}}" style="top: {{scrollTop}}px; height: {{scrollHeight}}px;">
+    <view class="bill-inner">
+      <block wx:if="{{bills.length > 0}}">
+        <block wx:for="{{bills}}" wx:key="_id">
+          <view class="bill-card">
+            <view class="bill-head">
+              <text class="bill-name">{{item.billionaireName || '富豪'}}</text>
+              <text class="bill-amount">{{item.amountDisplay}}</text>
+            </view>
+            <view class="bill-meta">
+              <text>第{{item.period}}期 · {{item.timeDisplay}}</text>
+              <view class="bill-meta-right">
+                <text class="mode-badge mode-{{item.modeKey}}">{{item.modeLabel}}</text>
+                <text class="progress-tag {{item.isOver ? 'over' : ''}}">{{item.isOver ? '已超预算' : item.progress + '%'}}</text>
+              </view>
+            </view>
+            <view class="bill-actions">
+              <view class="bill-items">
+                <block wx:for="{{item.topProducts}}" wx:for-item="p" wx:key="id">
+                  {{p.name}}×{{p.qty}}<block wx:if="{{!last}}"> </block>
+                </block>
+                <text wx:if="{{item.productCount > 3}}" class="bill-more"> 等{{item.productCount}}种</text>
+              </view>
+              <view class="delete-btn" bindtap="onDelete" data-id="{{item._id}}">🗑 删除</view>
+            </view>
+          </view>
+        </block>
+      </block>
+
+      <view class="empty" wx:else>
+        <view class="empty-illust">😶</view>
+        <view class="empty-text">暂无消费记录</view>
+        <view class="empty-sub">快去拯救富豪吧！</view>
+      </view>
+
+      <view style="height: 160rpx;"></view>
+    </view>
+  </scroll-view>
 
   <view class="retire-fixed">
     <view class="retire-btn" bindtap="onRetire">
