@@ -26,6 +26,7 @@ Page({
     showProfile: false,
     profileName: '',
     profileAvatar: '',
+    profileNationality: '',
     profileCompanies: [],
     profileAssets: '',
     profileTags: [],
@@ -45,12 +46,21 @@ Page({
     }
   },
 
+  async onPullDownRefresh() {
+    await this.loadBillionaires();
+    wx.stopPullDownRefresh();
+  },
+
   async loadBillionaires() {
     let list = [];
     try {
       const res = await cloud.getBillionaire();
+      console.log('[index] getBillionaire 返回条数:', res?.list?.length);
       if (res && res.list && res.list.length > 0) {
         list = res.list;
+        // 打印第一条看看有没有 nationality
+        console.log('[index] 第一条富豪keys:', Object.keys(list[0]));
+        console.log('[index] 第一条富豪数据:', JSON.stringify(list[0]));
       }
     } catch (e) {
       console.warn('拉取富豪失败', e);
@@ -82,6 +92,7 @@ Page({
       const textTop  = Math.round(cy - textR * Math.cos(rad));    // CSS y = cy - r·cos(θ)
       return {
         name: b.name,
+        nationality: b.nationality || '',
         color: COLOR_PALETTE[i % COLOR_PALETTE.length],
         textLeft,
         textTop,
@@ -140,6 +151,8 @@ Page({
       this.setData({ spinning: false });
 
       const billionaire = this.data.billionaireList[idx];
+      console.log('[index] selected billionaire:', JSON.stringify(billionaire));
+      console.log('[index] nationality value:', billionaire.nationality, 'type:', typeof billionaire.nationality);
       const sel = this.data.sectors[idx];
       if (!billionaire) return;
 
@@ -148,6 +161,7 @@ Page({
       app.globalData.currentBillionaire = {
         id: parseInt(billionaire._id, 10),
         name: billionaire.name,
+        nationality: billionaire.nationality,
         companies: billionaire.companies,
         assets: billionaire.assets,
         tags: billionaire.tags,
@@ -162,6 +176,7 @@ Page({
         showProfile: true,
         profileName: billionaire.name || '',
         profileAvatar: (billionaire.name || '?')[0],
+        profileNationality: billionaire.nationality || '',
         profileCompanies: billionaire.companies || [],
         profileAssets: formattedAssets,
         profileTags: billionaire.tags || [],
@@ -198,31 +213,6 @@ Page({
   onStartNormal() {
     app.globalData.currentMode = 'normal';
     app.globalData.budget = app.globalData.currentBillionaire.assets;
-    app.globalData.spent = 0;
-    app.globalData.cart = [];
-    wx.redirectTo({ url: '/pages/shop-normal/shop-normal' });
-  },
-
-  goChallenge() {
-    // 随机选取一位富豪
-    const list = this.data.billionaireList;
-    if (!list || list.length === 0) {
-      wx.showToast({ title: '请先抽取富豪', icon: 'none' });
-      return;
-    }
-    const billionaire = list[Math.floor(Math.random() * list.length)];
-    app.globalData.currentBillionaire = {
-      id: parseInt(billionaire._id, 10),
-      name: billionaire.name,
-      companies: billionaire.companies,
-      assets: billionaire.assets,
-      tags: billionaire.tags,
-      matchTags: billionaire.matchTags || [],
-      catchphrase: billionaire.catchphrase,
-      avatar: billionaire.avatar
-    };
-    app.globalData.currentMode = 'timed';
-    app.globalData.budget = billionaire.assets;
     app.globalData.spent = 0;
     app.globalData.cart = [];
     wx.redirectTo({ url: '/pages/shop-normal/shop-normal' });

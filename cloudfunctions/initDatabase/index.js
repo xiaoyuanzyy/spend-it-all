@@ -144,33 +144,55 @@ function randomInt(min, max) {
 }
 
 // ==================== 主函数 ====================
+// event.action: 'all' | 'billionaires' | 'products'
+//    'all'         → 初始化所有（富豪 + 商品 + mock数据）
+//    'billionaires'→ 只覆盖写入富豪数据（不影响商品）
+//    'products'    → 只覆盖写入商品数据（不影响富豪）
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext();
+  const { action = 'all' } = event || {};
   const results = [];
 
   // ---- 1. 初始化亿万富豪集合（doc().set，_id 不能出现在 data 中）----
-  for (const b of billionaires) {
-    try {
-      const { _id, ...dataWithoutId } = b;
-      await db.collection('billionaires').doc(_id).set({ data: dataWithoutId });
-      results.push({ collection: 'billionaires', action: 'upsert', id: _id, name: b.name, status: 'ok' });
-    } catch (e) {
-      results.push({ collection: 'billionaires', action: 'upsert', id: b._id, name: b.name, status: 'error', message: e.message });
+  if (action === 'all' || action === 'billionaires') {
+    for (const b of billionaires) {
+      try {
+        const { _id, ...dataWithoutId } = b;
+        await db.collection('billionaires').doc(_id).set({ data: dataWithoutId });
+        results.push({ collection: 'billionaires', action: 'upsert', id: _id, name: b.name, status: 'ok' });
+      } catch (e) {
+        results.push({ collection: 'billionaires', action: 'upsert', id: b._id, name: b.name, status: 'error', message: e.message });
+      }
     }
   }
 
   // ---- 1.5 初始化商品集合（doc().set，_id 不能出现在 data 中）----
-  for (const p of products) {
-    try {
-      const { _id, ...dataWithoutId } = p;
-      await db.collection('products').doc(_id).set({ data: dataWithoutId });
-      results.push({ collection: 'products', action: 'upsert', id: _id, name: p.name, status: 'ok' });
-    } catch (e) {
-      results.push({ collection: 'products', action: 'upsert', id: p._id, name: p.name, status: 'error', message: e.message });
+  if (action === 'all' || action === 'products') {
+    for (const p of products) {
+      try {
+        const { _id, ...dataWithoutId } = p;
+        await db.collection('products').doc(_id).set({ data: dataWithoutId });
+        results.push({ collection: 'products', action: 'upsert', id: _id, name: p.name, status: 'ok' });
+      } catch (e) {
+        results.push({ collection: 'products', action: 'upsert', id: p._id, name: p.name, status: 'error', message: e.message });
+      }
     }
   }
 
-  // ---- 2. 生成 Mock 账单 ----
+  // 单独执行富豪或商品时，不生成 mock 数据
+  if (action === 'billionaires' || action === 'products') {
+    return {
+      success: true,
+      action,
+      summary: {
+        billionaires: action === 'billionaires' ? billionaires.length : 0,
+        products: action === 'products' ? products.length : 0
+      },
+      results
+    };
+  }
+
+  // ---- 2. 生成 Mock 账单（仅 action === 'all'）----
   const now = Date.now();
   const oneDay = 86400000;
   const mockBills = [];
@@ -264,6 +286,6 @@ exports.main = async (event, context) => {
       profiles: 1,
       rooms: 1
     },
-    results: results
+    results
   };
 };

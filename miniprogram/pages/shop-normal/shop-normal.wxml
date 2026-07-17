@@ -3,10 +3,8 @@
   <view class="top-fixed">
     <view class="status-bar">9:41</view>
     <view class="header-row">
-      <view class="me-btn" bindtap="goProfile">
-        <text>👤</text>
-        <text>我的</text>
-      </view>
+      <view class="nav-back" bindtap="onBack">←</view>
+      <view class="title">尽情挥霍吧</view>
     </view>
     <view class="budget">
       <view class="budget-row">

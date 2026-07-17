@@ -212,6 +212,15 @@
   white-space: nowrap;
 }
 
+.segment-nation {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 18rpx;
+  font-weight: 600;
+  text-shadow: 0 0 6rpx rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
 .spin-btn-wrap {
   display: flex;
   justify-content: center;
@@ -349,6 +358,18 @@
   color: #1a1a2e;
   margin-top: 24rpx;
   letter-spacing: 4rpx;
+}
+
+.profile-nationality {
+  display: inline-block;
+  margin-top: 12rpx;
+  padding: 6rpx 28rpx;
+  background: linear-gradient(135deg, #d4af37, #f5e3a1);
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #1a1a2e;
+  letter-spacing: 2rpx;
 }
 
 .profile-section {

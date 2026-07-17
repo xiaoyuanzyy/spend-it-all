@@ -276,20 +276,3 @@
   font-size: 28rpx;
   font-weight: 600;
 }
-
-/* AI 生图管理入口 */
-.admin-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-  padding: 20rpx 0;
-  margin-bottom: 16rpx;
-  color: #a0a0a0;
-  font-size: 22rpx;
-}
-
-.admin-arrow {
-  font-size: 20rpx;
-  color: #c0c0c0;
-}

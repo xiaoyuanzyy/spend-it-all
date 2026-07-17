@@ -48,6 +48,10 @@ Page({
     if (isTimed) this.startCountdown();
   },
 
+  onBack() {
+    wx.navigateBack({ delta: 1 });
+  },
+
   onUnload() {
     if (this.data.timer) clearInterval(this.data.timer);
   },
@@ -191,6 +195,11 @@ Page({
     const b = this.data.billionaire;
     const matchTags = (b && b.matchTags) || [];
     const matched = (product.tags || []).some(pt => matchTags.includes(pt));
+
+    // 与富豪不匹配的商品点击时震动提示
+    if (!matched) {
+      wx.vibrateShort({ type: 'medium' });
+    }
 
     // 只有符合品味才买入
     if (matched) {

@@ -77,11 +77,6 @@
     <view class="empty-sub">快去拯救富豪吧！</view>
   </view>
 
-  <view class="admin-link" bindtap="onGoAdmin">
-    <text>🔧 AI 生图管理</text>
-    <text class="admin-arrow">→</text>
-  </view>
-
   <view style="height: 160rpx;"></view>
 
   <view class="retire-fixed">

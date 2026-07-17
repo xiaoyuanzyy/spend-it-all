@@ -14,10 +14,6 @@
       <text class="icon">👑</text>
     </view>
     <view class="header-actions">
-      <view class="header-me" bindtap="goChallenge">
-        <text>⚡</text>
-        <text>挑战</text>
-      </view>
       <view class="header-me" bindtap="onShowProfile">
         <text>👤</text>
         <text>我的</text>
@@ -38,6 +34,7 @@
     <view class="wheel" style="transform: rotate({{rotateDeg}}deg); {{wheelConicGradient}}">
       <block wx:for="{{sectors}}" wx:key="name">
         <text class="segment-text" style="left: {{item.textLeft}}rpx; top: {{item.textTop}}rpx; transform: translate(-50%, -50%);">{{item.name}}</text>
+        <text class="segment-nation" style="left: {{item.textLeft}}rpx; top: {{item.textTop + 28}}rpx; transform: translate(-50%, -50%);">{{item.nationality}}</text>
       </block>
     </view>
     <view class="wheel-inner">
@@ -58,6 +55,7 @@
   </view>
 
   <view class="hint">点击转盘，随机抽取一位富豪…</view>
+  <view class="hint">下拉页面，换一批富豪…</view>
 
   <!-- 富豪简介卡片 -->
   <view class="profile-overlay {{showProfile ? 'show' : ''}}" catchtap="onCloseProfile">
@@ -69,6 +67,8 @@
       </view>
 
       <view class="profile-name">{{profileName}}</view>
+
+      <view class="profile-nationality">{{profileNationality || '国籍未知'}}</view>
 
       <view class="profile-section">
         <view class="profile-section-label">旗下公司</view>

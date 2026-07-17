@@ -128,9 +128,5 @@ Page({
 
   onBack() {
     wx.navigateBack({ delta: 1 });
-  },
-
-  onGoAdmin() {
-    wx.navigateTo({ url: '/pages/admin/admin' });
   }
 });

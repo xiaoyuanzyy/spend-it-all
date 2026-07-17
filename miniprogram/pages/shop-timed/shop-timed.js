@@ -58,6 +58,10 @@ Page({
     this.startCountdown();
   },
 
+  onBack() {
+    wx.navigateBack({ delta: 1 });
+  },
+
   // 挑战模式：直接从房间数据拉取富豪信息（最可靠的来源）
   async loadBillionaireFromRoom() {
     const roomCode = app.globalData.roomCode;
@@ -239,6 +243,11 @@ Page({
     const b = this.data.billionaire;
     const matchTags = (b && b.matchTags) || [];
     const matched = (product.tags || []).some(pt => matchTags.includes(pt));
+
+    // 与富豪不匹配的商品点击时震动提示
+    if (!matched) {
+      wx.vibrateShort({ type: 'medium' });
+    }
 
     // 只有符合品味才买入
     if (matched) {
