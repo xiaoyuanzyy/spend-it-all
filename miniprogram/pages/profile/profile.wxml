@@ -48,6 +48,12 @@
         <text class="stat-value">{{stats.badges}}</text>
         <text class="stat-label">成就徽章</text>
       </view>
+      <view class="stat-divider"></view>
+      <view class="stat stat-rank" bindtap="onGoLeaderboard">
+        <text class="stat-icon rank-icon">🏆</text>
+        <text class="stat-value">{{rank !== null ? rank : '—'}}</text>
+        <text class="stat-label">排名<text class="rank-arrow"> ›</text></text>
+      </view>
     </view>
 
     <view class="history-row">

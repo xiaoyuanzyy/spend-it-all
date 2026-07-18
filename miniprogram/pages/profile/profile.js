@@ -1,19 +1,31 @@
 // pages/profile/profile.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, formatCNY, shortName } = require('../../utils/format.js');
+const { formatMoney, formatCNY, getAvatarChar } = require('../../utils/format.js');
 
 const DEFAULT_USER = {
-  nickname: '富一代·布莱恩',
+  nickname: '神秘富豪',
   vip: '0000420',
-  avatar: '布',
-  role: '首席挥霍官'
+  avatar: '秘',
+  role: '见习挥霍官'
 };
+
+// 根据勋章数计算等级
+function calcRole(badges) {
+  if (badges >= 50) return '挥霍之神';
+  if (badges >= 30) return '传奇挥霍官';
+  if (badges >= 15) return '首席挥霍官';
+  if (badges >= 7) return '资深挥霍官';
+  if (badges >= 2) return '初级挥霍官';
+  return '见习挥霍官';
+}
 
 Page({
   data: {
     user: { ...DEFAULT_USER },
     stats: { conquered: 0, spent: 0, badges: 0, spentDisplay: '0' },
+    rank: null,
+    rankTotal: 0,
     bills: [],
     expandedIndex: -1,
     statusBarHeight: 44,
@@ -31,13 +43,15 @@ Page({
     this.setData({ statusBarHeight: sys.statusBarHeight || 44 });
     // 先尝试本地缓存快速渲染
     this.loadLocalProfile();
-    // 再从云端拉取最新资料
+    // 再从云端拉取最新资料（首次自动生成花名）
     this.loadProfile();
     this.loadBills();
+    this.loadRank();
   },
 
   onShow() {
     this.loadBills();
+    this.loadRank();
   },
 
   // 从本地缓存读取资料
@@ -51,18 +65,27 @@ Page({
     } catch (e) { /* 忽略 */ }
   },
 
-  // 从云端加载用户资料
+  // 从云端加载用户资料（花名已由 app.js 在启动时生成）
   async loadProfile() {
     try {
       const res = await cloud.getProfile();
-      if (res && res.ok && res.profile) {
-        const profile = res.profile;
-        const user = { ...DEFAULT_USER, ...profile };
-        this.setData({ user });
-        // 缓存到本地
-        wx.setStorage({ key: 'profile', data: { nickname: user.nickname, avatar: user.avatar, vip: user.vip, role: user.role } });
-        // 解析头像 URL
-        this.resolveAvatar(user.avatar);
+      if (res && res.ok) {
+        if (res.profile) {
+          const profile = res.profile;
+          const user = { ...DEFAULT_USER, ...profile };
+          this.setData({ user });
+          wx.setStorage({ key: 'profile', data: { nickname: user.nickname, avatar: user.avatar, vip: user.vip, role: user.role } });
+          this.resolveAvatar(user.avatar);
+          // 同步到全局，确保所有页面用同一个花名
+          app.globalData.userInfo = app.globalData.userInfo || {};
+          app.globalData.userInfo.nickname = user.nickname;
+          app.globalData.userInfo.nickName = user.nickname;
+        } else if (res.isNew) {
+          // app.js 可能还在初始化，等待或用缓存
+          const wxName = (app.globalData.userInfo && (app.globalData.userInfo.nickname || app.globalData.userInfo.nickName)) || DEFAULT_USER.nickname;
+          const user = { ...DEFAULT_USER, nickname: wxName, avatar: getAvatarChar(wxName) };
+          this.setData({ user });
+        }
       }
     } catch (e) {
       // 使用默认值/缓存值
@@ -113,7 +136,7 @@ Page({
           return {
             ...b,
             billionaireFullName: b.billionaireName || '富豪',
-            billionaireName: shortName(b.billionaireName),
+            billionaireName: b.billionaireName || '富豪',
             amountDisplay: formatCNY(b.total),
             topProducts: products.slice(0, 3),
             productCount: products.length,
@@ -125,26 +148,62 @@ Page({
             modeKey: b.mode || 'normal'
           };
         });
-        // 汇总：挥霍金额 = 所有账单总和
         const total = list.reduce((s, b) => s + (b.total || 0), 0);
-        // 征服富豪：花费 >= 100% 预算
         const conquered = list.filter(b => (b.total || 0) >= (b.budget || 1)).length;
-        // 挑战成功：challenge 模式且 success = true
         const challengeWins = list.filter(b => b.mode === 'challenge' && b.success).length;
-        // 徽章 = 征服富豪 + 挑战成功
         const badges = conquered + challengeWins;
+        const newRole = calcRole(badges);
         this.setData({
           bills: list,
           'stats.spent': total,
           'stats.spentDisplay': formatMoney(total).replace('$', ''),
           'stats.conquered': conquered,
-          'stats.badges': badges
+          'stats.badges': badges,
+          'user.role': newRole
+        });
+        // 等级变化时同步到云端和本地缓存
+        if (newRole !== this.data.user.role) {
+          this.syncRole(newRole);
+        }
+      }
+    } catch (e) {
+      this.setData({ bills: [] });
+    }
+  },
+
+  // 加载全服排名
+  async loadRank() {
+    try {
+      const res = await cloud.getLeaderboard();
+      if (res && res.ok && res.list) {
+        const myOpenid = app.globalData.openid;
+        const myIndex = res.list.findIndex(item => item.openid === myOpenid);
+        this.setData({
+          rank: myIndex >= 0 ? myIndex + 1 : null,
+          rankTotal: res.list.length
         });
       }
     } catch (e) {
-      // 本地兜底
-      this.setData({ bills: [] });
+      // 静默失败
     }
+  },
+
+  // 点击排名 → 跳转排行榜
+  onGoLeaderboard() {
+    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
+  },
+
+  // 同步等级到云端和本地缓存
+  async syncRole(newRole) {
+    const user = { ...this.data.user, role: newRole };
+    try {
+      await cloud.saveProfile({ nickname: user.nickname, avatar: user.avatar, role: newRole });
+    } catch (e) { /* 静默 */ }
+    try {
+      const cached = wx.getStorageSync('profile') || {};
+      cached.role = newRole;
+      wx.setStorageSync('profile', cached);
+    } catch (e) { /* 静默 */ }
   },
 
   onExpand(e) {
@@ -163,15 +222,12 @@ Page({
     if (!confirm) return;
     try {
       const res = await cloud.deleteBill(id);
-      console.log('[delete] res', JSON.stringify(res));
       if (res && res.ok) {
         wx.showToast({ title: '已删除', icon: 'success', duration: 1000 });
       } else {
-        console.error('[delete] 云函数返回失败', res);
         wx.showToast({ title: (res && res.error) || '删除失败', icon: 'none' });
       }
     } catch (err) {
-      console.error('[delete] 异常', err);
       wx.showToast({ title: '删除失败', icon: 'none' });
     }
     this.loadBills();
@@ -218,6 +274,10 @@ Page({
       const user = { ...this.data.user, nickname };
       this.setData({ user, editing: false, saving: false });
       wx.setStorage({ key: 'profile', data: { nickname: user.nickname, avatar: user.avatar, vip: user.vip, role: user.role } });
+      // 同步到全局，所有页面使用（保留 avatarUrl 等字段）
+      app.globalData.userInfo = app.globalData.userInfo || {};
+      app.globalData.userInfo.nickname = nickname;
+      app.globalData.userInfo.nickName = nickname;
       wx.showToast({ title: '保存成功', icon: 'success' });
     } catch (e) {
       this.setData({ saving: false });
@@ -254,17 +314,12 @@ Page({
     wx.showLoading({ title: '上传中...' });
     try {
       const cloudPath = 'avatars/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.png';
-      const uploadRes = await wx.cloud.uploadFile({
-        cloudPath,
-        filePath
-      });
+      const uploadRes = await wx.cloud.uploadFile({ cloudPath, filePath });
       const fileID = uploadRes.fileID;
-      // 保存到数据库
       await cloud.saveProfile({ avatar: fileID, nickname: this.data.user.nickname });
       const user = { ...this.data.user, avatar: fileID };
       this.setData({ user });
       wx.setStorage({ key: 'profile', data: { nickname: user.nickname, avatar: user.avatar, vip: user.vip, role: user.role } });
-      // 解析为临时 URL 用于显示
       await this.resolveAvatar(fileID);
       wx.hideLoading();
       wx.showToast({ title: '头像更新成功', icon: 'success' });
@@ -292,7 +347,6 @@ Page({
     const idx = e.currentTarget.dataset.idx;
     const bill = this.data.bills[idx];
     if (!bill) return;
-    // 构造 billResult，与 shop-normal 结算时格式一致
     app.globalData.billResult = {
       products: (bill.products || []).map(p => ({ ...p, qty: p.qty || p.purchased || 1 })),
       total: bill.total || 0,

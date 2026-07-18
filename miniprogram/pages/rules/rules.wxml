@@ -1,0 +1,181 @@
+<view class="page">
+  <!-- 导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-back" bindtap="onBack">←</view>
+    <view class="nav-title">排 名 规 则</view>
+  </view>
+
+  <scroll-view scroll-y class="content" enhanced show-scrollbar="{{false}}">
+    <!-- 核心公式 - 英雄区 -->
+    <view class="hero-card">
+      <view class="hero-glow"></view>
+      <view class="hero-icon">🏆</view>
+      <view class="hero-title">排名唯一标准</view>
+      <view class="hero-divider"></view>
+      <view class="hero-metric">
+        <text class="hero-metric-label">按</text>
+        <text class="hero-metric-val">勋章数</text>
+        <text class="hero-metric-label">从高到低排名</text>
+      </view>
+      <view class="hero-sub">勋章 = 征服次数 + 挑战模式胜利次数</view>
+    </view>
+
+    <!-- 勋章来源 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-dot">◆</view>
+        <text class="section-title">勋章来源</text>
+      </view>
+      <view class="source-grid">
+        <view class="source-card">
+          <view class="source-icon-wrap gold">
+            <text class="source-icon">🎯</text>
+          </view>
+          <text class="source-label">征服富豪</text>
+          <text class="source-desc">单局消费总额 ≥ 预算</text>
+        </view>
+        <view class="source-card">
+          <view class="source-icon-wrap fire">
+            <text class="source-icon">⚡</text>
+          </view>
+          <text class="source-label">挑战胜利</text>
+          <text class="source-desc">限时挑战模式获胜</text>
+        </view>
+        <view class="source-card">
+          <view class="source-icon-wrap party">
+            <text class="source-icon">👥</text>
+          </view>
+          <text class="source-label">多人房间</text>
+          <text class="source-desc">房间对战花光预算</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 等级头衔 - 阶梯式 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-dot">◆</view>
+        <text class="section-title">等级头衔</text>
+      </view>
+      <view class="tier-ladder">
+        <!-- 挥霍之神 -->
+        <view class="tier-row god">
+          <view class="tier-bar">
+            <view class="tier-fill"></view>
+          </view>
+          <view class="tier-card">
+            <view class="tier-left">
+              <view class="tier-badge god-bg">👑</view>
+            </view>
+            <view class="tier-body">
+              <text class="tier-name">挥霍之神</text>
+              <text class="tier-cond">≥ 50 勋章</text>
+            </view>
+            <view class="tier-gap">+20</view>
+          </view>
+        </view>
+        <!-- 传奇挥霍官 -->
+        <view class="tier-row legend">
+          <view class="tier-bar">
+            <view class="tier-fill"></view>
+          </view>
+          <view class="tier-card">
+            <view class="tier-left">
+              <view class="tier-badge legend-bg">⭐</view>
+            </view>
+            <view class="tier-body">
+              <text class="tier-name">传奇挥霍官</text>
+              <text class="tier-cond">≥ 30 勋章</text>
+            </view>
+            <view class="tier-gap">+15</view>
+          </view>
+        </view>
+        <!-- 首席挥霍官 -->
+        <view class="tier-row chief">
+          <view class="tier-bar">
+            <view class="tier-fill"></view>
+          </view>
+          <view class="tier-card">
+            <view class="tier-left">
+              <view class="tier-badge chief-bg">💎</view>
+            </view>
+            <view class="tier-body">
+              <text class="tier-name">首席挥霍官</text>
+              <text class="tier-cond">≥ 15 勋章</text>
+            </view>
+            <view class="tier-gap">+8</view>
+          </view>
+        </view>
+        <!-- 资深挥霍官 -->
+        <view class="tier-row senior">
+          <view class="tier-bar">
+            <view class="tier-fill"></view>
+          </view>
+          <view class="tier-card">
+            <view class="tier-left">
+              <view class="tier-badge senior-bg">🔷</view>
+            </view>
+            <view class="tier-body">
+              <text class="tier-name">资深挥霍官</text>
+              <text class="tier-cond">≥ 7 勋章</text>
+            </view>
+            <view class="tier-gap">+5</view>
+          </view>
+        </view>
+        <!-- 初级挥霍官 -->
+        <view class="tier-row junior">
+          <view class="tier-bar">
+            <view class="tier-fill"></view>
+          </view>
+          <view class="tier-card">
+            <view class="tier-left">
+              <view class="tier-badge junior-bg">🔹</view>
+            </view>
+            <view class="tier-body">
+              <text class="tier-name">初级挥霍官</text>
+              <text class="tier-cond">≥ 2 勋章</text>
+            </view>
+            <view class="tier-gap">+2</view>
+          </view>
+        </view>
+        <!-- 见习挥霍官 -->
+        <view class="tier-row rookie">
+          <view class="tier-card rook-card">
+            <view class="tier-left">
+              <view class="tier-badge rookie-bg">🌱</view>
+            </view>
+            <view class="tier-body">
+              <text class="tier-name">见习挥霍官</text>
+              <text class="tier-cond">&lt; 2 勋章 · 默认身份</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 常见问题 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-dot">◆</view>
+        <text class="section-title">常见问题</text>
+      </view>
+      <view class="faq-list">
+        <view class="faq-card">
+          <view class="faq-q">排行榜多久更新一次？</view>
+          <view class="faq-a">每次打开排行榜页面会实时拉取最新数据。</view>
+        </view>
+        <view class="faq-card">
+          <view class="faq-q">勋章数相同怎么排名？</view>
+          <view class="faq-a">勋章数相同时按用户 ID 排序，保证每次结果一致。</view>
+        </view>
+        <view class="faq-card">
+          <view class="faq-q">如何快速提升排名？</view>
+          <view class="faq-a">多玩挑战模式，普通征服 + 挑战胜利可一局获得 2 枚勋章。</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="bottom-space"></view>
+  </scroll-view>
+</view>
+

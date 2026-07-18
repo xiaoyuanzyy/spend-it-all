@@ -1,0 +1,106 @@
+<view class="page">
+  <!-- 导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-back" bindtap="onBack">←</view>
+    <view class="nav-title">🏆 挥霍排行榜</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="loading-spin">⏳</view>
+    <view class="loading-text">排行加载中…</view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">
+    <view class="empty-icon">📭</view>
+    <view class="empty-text">暂无排行数据</view>
+    <view class="empty-sub">快去完成一局游戏吧</view>
+  </view>
+
+  <block wx:if="{{!loading && list.length > 0}}">
+    <!-- 荣誉殿堂（固定） -->
+    <view class="podium-fixed">
+      <view class="podium">
+        <view class="podium-title">👑 荣誉殿堂</view>
+        <view class="podium-row">
+          <view class="podium-card silver" wx:if="{{list.length >= 2}}">
+            <view class="podium-medal">🥈</view>
+            <view class="podium-avatar">{{list[1].avatar}}</view>
+            <view class="podium-name">{{list[1].nickname}}</view>
+            <view class="podium-role role-{{list[1].roleClass}}">{{list[1].role}}</view>
+          </view>
+          <view class="podium-card gold {{list.length >= 1 ? 'top' : ''}}" wx:if="{{list.length >= 1}}">
+            <view class="podium-crown">👑</view>
+            <view class="podium-avatar champion">{{list[0].avatar}}</view>
+            <view class="podium-name">{{list[0].nickname}}</view>
+            <view class="podium-role role-{{list[0].roleClass}}">{{list[0].role}}</view>
+            <view class="podium-reign" wx:if="{{reignDuration}}">
+              <text class="podium-reign-icon">⏱</text>
+              <text class="podium-reign-text">霸榜 {{reignDuration}}</text>
+            </view>
+          </view>
+          <view class="podium-card bronze" wx:if="{{list.length >= 3}}">
+            <view class="podium-medal">🥉</view>
+            <view class="podium-avatar">{{list[2].avatar}}</view>
+            <view class="podium-name">{{list[2].nickname}}</view>
+            <view class="podium-role role-{{list[2].roleClass}}">{{list[2].role}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 排名规则入口 -->
+    <view class="rules-entry" bindtap="onGoRules">
+      <view class="rules-entry-left">
+        <text class="rules-entry-icon">📖</text>
+        <view class="rules-entry-info">
+          <text class="rules-entry-title">排名规则</text>
+          <text class="rules-entry-desc">按勋章数排名，勋章越多越靠前</text>
+        </view>
+      </view>
+      <text class="rules-entry-arrow">›</text>
+    </view>
+
+    <!-- 全部排行（可滚动） -->
+    <scroll-view scroll-y class="list-scroll">
+      <view class="rank-section">
+        <view class="rank-section-title">全部排行</view>
+
+        <view class="rank-item {{myIndex === index ? 'is-me' : ''}} {{item.rank <= 3 ? 'top-' + item.rank : ''}}"
+              wx:for="{{list}}" wx:key="openid" wx:for-index="index">
+          <view class="rank-no-col {{item.rank <= 3 ? 'crown' : ''}}">
+            <text wx:if="{{item.rankMedal}}" class="rank-medal">{{item.rankMedal}}</text>
+            <text wx:else class="rank-num">{{item.rank}}</text>
+          </view>
+          <view class="rank-avatar {{item.rank <= 3 ? 'highlight' : ''}}">
+            <text class="rank-avatar-text">{{item.avatar}}</text>
+          </view>
+          <view class="rank-mid">
+            <view class="rank-name-row">
+              <text class="rank-name">{{item.nickname}}</text>
+              <text wx:if="{{myIndex === index}}" class="rank-me-tag">我</text>
+            </view>
+            <view class="rank-level role-{{item.roleClass}}">{{item.role}}</view>
+          </view>
+          <view class="rank-right">
+            <view class="rank-stat">
+              <text class="rank-stat-val">{{item.conquered}}</text>
+              <text class="rank-stat-lbl">征服</text>
+            </view>
+            <view class="rank-stat">
+              <text class="rank-stat-val">{{item.badges}}</text>
+              <text class="rank-stat-lbl">勋章</text>
+            </view>
+            <view class="rank-stat">
+              <text class="rank-stat-val">{{item.billCount}}</text>
+              <text class="rank-stat-lbl">账单</text>
+            </view>
+          </view>
+        </view>
+
+        <view style="height: 40rpx;"></view>
+      </view>
+    </scroll-view>
+  </block>
+</view>

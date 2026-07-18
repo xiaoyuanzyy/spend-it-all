@@ -12,27 +12,9 @@ exports.main = async () => {
     if (res.data && res.data.length > 0) {
       return { ok: true, profile: res.data[0] };
     }
-    // 兜底返回
-    return {
-      ok: true,
-      profile: {
-        openid,
-        nickname: '富一代·布莱恩',
-        avatar: '布',
-        vip: '0000420',
-        role: '首席挥霍官'
-      }
-    };
+    // 新用户：返回 isNew 标记
+    return { ok: true, profile: null, isNew: true };
   } catch (e) {
-    return {
-      ok: true,
-      profile: {
-        openid,
-        nickname: '富一代·布莱恩',
-        avatar: '布',
-        vip: '0000420',
-        role: '首席挥霍官'
-      }
-    };
+    return { ok: true, profile: null, isNew: true };
   }
 };

@@ -50,6 +50,15 @@ function shortName(name) {
   return parts[parts.length - 1];
 }
 
+// 取名字中第一个中文字符做头像，没有中文字则取第一个字符
+function getAvatarChar(name) {
+  if (!name) return '?';
+  for (const ch of [...name]) {
+    if (/[\u4e00-\u9fff]/.test(ch)) return ch;
+  }
+  return name[0];
+}
+
 module.exports = {
   formatMoney,
   formatM,
@@ -57,5 +66,6 @@ module.exports = {
   formatCNY,
   formatK,
   today,
-  shortName
+  shortName,
+  getAvatarChar
 };

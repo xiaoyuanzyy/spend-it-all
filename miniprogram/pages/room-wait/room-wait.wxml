@@ -17,7 +17,7 @@
     <view class="player-card-title">当前玩家</view>
     <block wx:for="{{players}}" wx:key="slot">
       <view class="player-row">
-        <view class="avatar {{item.nickname === '等待加入...' ? 'empty' : ''}}">{{item.nickname[0] || '?'}}</view>
+        <view class="avatar {{item.nickname === '等待加入...' ? 'empty' : ''}}">{{item.avatar || '?'}}</view>
         <view class="player-info">
           <view class="player-name">{{item.nickname}}</view>
           <view class="player-tags">

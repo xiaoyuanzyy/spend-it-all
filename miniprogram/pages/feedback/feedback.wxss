@@ -1,11 +1,15 @@
 /* pages/feedback/feedback.wxss */
 .page {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f6efde;
   color: #1a1a2e;
+  overflow: hidden;
 }
 
 .header {
+  flex-shrink: 0;
   background: #f6efde;
 }
 
@@ -39,6 +43,7 @@
 
 /* 表单卡片 */
 .form-card {
+  flex-shrink: 0;
   margin: 24rpx 32rpx;
   padding: 32rpx;
   background: #ffffff;
@@ -120,7 +125,10 @@
 
 /* 留言列表 */
 .messages-section {
-  margin: 24rpx 32rpx;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 32rpx 32rpx;
+  -webkit-overflow-scrolling: touch;
 }
 
 .messages-title {

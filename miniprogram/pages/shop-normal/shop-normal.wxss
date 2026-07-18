@@ -78,16 +78,16 @@
 .billionaire-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8rpx;
+  gap: 6rpx;
 }
 
 .b-tag {
-  padding: 4rpx 16rpx;
+  padding: 3rpx 12rpx;
   background: rgba(212, 175, 55, 0.12);
   border: 1rpx solid rgba(212, 175, 55, 0.3);
   border-radius: 999rpx;
   color: #d4af37;
-  font-size: 20rpx;
+  font-size: 18rpx;
 }
 
 .budget-right {
@@ -269,7 +269,33 @@
   color: #d4af37;
   font-size: 30rpx;
   font-weight: 700;
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+/* ---- 商品标签 ---- */
+.product-tags {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6rpx;
+  max-width: 60%;
+}
+
+.product-tag {
+  padding: 6rpx 14rpx;
+  border-radius: 10rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  white-space: nowrap;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.92), rgba(245, 227, 161, 0.85));
+  color: #1a1a2e;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.35);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 2rpx;
 }
 
 .product-actions {

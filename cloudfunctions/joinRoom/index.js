@@ -18,7 +18,7 @@ exports.main = async (event) => {
     if (room.status !== 'waiting') {
       return { ok: false, error: '房间已开始' };
     }
-    if (room.players.length >= 3) {
+    if (room.players.length >= 4) {
       return { ok: false, error: '房间已满' };
     }
     if (room.players.some(p => p.openid === openid)) {
@@ -30,8 +30,8 @@ exports.main = async (event) => {
       nickname: (player && player.nickname) || '玩家',
       avatar: (player && player.avatar) || '',
       isHost: false,
-      slot,
-      amount: 0
+      slot
+      // amount 初始不设置，由 submitRoomResult 提交时填充
     };
     const players = room.players.concat([newPlayer]);
     await db.collection('rooms').doc(room._id).update({

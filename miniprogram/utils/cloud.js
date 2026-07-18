@@ -37,4 +37,8 @@ module.exports = {
   // 资料
   saveProfile: (data) => call('saveProfile', data),
   getProfile: () => call('getProfile', {}),
+  // 检查花名是否已被占用
+  checkName: (nickname) => call('checkName', { nickname }),
+  // 用户排行榜
+  getLeaderboard: () => call('getLeaderboard', {}),
 };

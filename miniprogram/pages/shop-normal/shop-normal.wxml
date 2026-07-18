@@ -11,7 +11,7 @@
         <view class="billionaire-info" wx:if="{{billionaire.name}}">
           <text class="billionaire-name">{{billionaire.name}}</text>
           <view class="billionaire-tags">
-            <text class="b-tag" wx:for="{{billionaire.tags}}" wx:key="*this">{{item}}</text>
+            <text class="b-tag" wx:for="{{billionaire.matchTags}}" wx:key="*this">{{item}}</text>
           </view>
         </view>
         <view class="budget-right">
@@ -26,10 +26,10 @@
         </view>
       </view>
     </view>
-    <!-- 30s 倒计时（仅限时模式） -->
+    <!-- 30s 倒计时（限时/对战模式） -->
     <view class="timer" wx:if="{{isTimed}}">
       <view class="timer-row">
-        <view class="timer-left">⏱ 限时消费</view>
+        <view class="timer-left">{{timerLabel}}</view>
         <view class="timer-right">剩余 {{remain}}s</view>
       </view>
       <view class="timer-track">
@@ -42,6 +42,9 @@
     <block wx:for="{{products}}" wx:key="id">
       <view class="product-card">
         <view class="bought-tag" wx:if="{{item.purchased > 0}}">已置办</view>
+        <view class="product-tags" wx:if="{{item.productTags.length > 0}}">
+          <view class="product-tag" wx:for="{{item.productTags}}" wx:key="*this">{{item}}</view>
+        </view>
         <view class="product-image">
           <block wx:if="{{item.image}}">
             <image class="product-img" src="{{item.image}}" mode="aspectFill" lazy-load="{{true}}"></image>

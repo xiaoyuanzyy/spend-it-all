@@ -1,7 +1,7 @@
 // pages/shop-normal/shop-normal.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, formatFull, formatM, shortName } = require('../../utils/format.js');
+const { formatMoney, formatFull, formatM } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -28,6 +28,7 @@ Page({
     totalCount: 0,
     // 限时模式
     isTimed: false,
+    timerLabel: '⏱ 限时消费',
     remain: 30,
     progress: 100,
     timer: null
@@ -35,8 +36,10 @@ Page({
 
   onLoad() {
     const b = app.globalData.currentBillionaire || { name: '富豪', tags: [] };
-    const isTimed = app.globalData.currentMode === 'timed';
-    this.setData({ billionaire: { ...b, name: shortName(b.name) }, isTimed });
+    const currentMode = app.globalData.currentMode || 'normal';
+    const isTimed = currentMode === 'timed' || currentMode === 'challenge';
+    const timerLabel = currentMode === 'challenge' ? '⏱ 对战限时' : '⏱ 限时消费';
+    this.setData({ billionaire: { ...b, name: b.name, matchTags: b.matchTags || b.tags || [] }, isTimed, timerLabel });
     this.loadProducts(b);
     const budget = app.globalData.budget || 50000000;
     this.setData({
@@ -49,7 +52,8 @@ Page({
   },
 
   onBack() {
-    wx.navigateBack({ delta: 1 });
+    if (this.data.timer) clearInterval(this.data.timer);
+    wx.reLaunch({ url: '/pages/index/index' });
   },
 
   onUnload() {
@@ -66,18 +70,26 @@ Page({
 
   async loadProducts(billionaire) {
     const id = (billionaire && billionaire.id != null) ? billionaire.id : 0;
+    // 获取富豪匹配标签
+    const matchTags = (billionaire && billionaire.matchTags && billionaire.matchTags.length)
+      ? billionaire.matchTags
+      : ((billionaire && billionaire.tags) || []);
     try {
       const res = await cloud.getProducts(id);
       if (res && res.list && res.list.length > 0) {
         // 统一 _id → id，确保置办按钮能匹配
         let list = res.list.map(p => {
           const pid = p._id || p.id;
+          const productTags = p.tags || [];
+          const matched = productTags.some(pt => matchTags.includes(pt));
           return {
             ...p,
             id: pid,
             image: p.image || '',
             priceDisplay: formatMoney(p.price),
-            purchased: 0
+            purchased: 0,
+            productTags,
+            matched
           };
         });
         const firstPage = list.slice(0, this.data.pageSize);
@@ -169,6 +181,11 @@ Page({
     const percent = this.data.budget > 0 ? Math.round(remaining / this.data.budget * 100) : 0;
     app.globalData.cart = cart;
     app.globalData.spent = total;
+    // 单个商品数量跌回 30 以下时清除该商品的震动标记
+    if (!this._vibratedProducts) this._vibratedProducts = {};
+    products.forEach(p => {
+      if ((p.purchased || 0) < 30) delete this._vibratedProducts[String(p.id)];
+    });
     let totalQty = 0;
     cart.forEach(c => { totalQty += c.qty; });
     this.setData({
@@ -191,9 +208,9 @@ Page({
     const matchTags = (b && b.matchTags && b.matchTags.length) ? b.matchTags : ((b && b.tags) || []);
     const matched = (product.tags || []).some(pt => matchTags.includes(pt));
 
-    // 与富豪不匹配的商品点击时震动提示
+    // 与富豪不匹配的商品点击时震动提示（vibrateLong 兼容 iOS/Android）
     if (!matched) {
-      wx.vibrateShort({ type: 'medium' });
+      wx.vibrateLong();
     }
 
     // 只有符合品味才买入
@@ -209,6 +226,14 @@ Page({
           : p
       );
       this.recalcCart(products);
+
+      // 单个商品达到 30 件时震动提示（每商品仅震一次，iOS/Android 通用）
+      if (!this._vibratedProducts) this._vibratedProducts = {};
+      const newQty = (product.purchased || 0) + 1;
+      if (newQty >= 30 && !this._vibratedProducts[String(id)]) {
+        this._vibratedProducts[String(id)] = true;
+        wx.vibrateLong();
+      }
     }
 
     // 弹反应气泡
@@ -237,7 +262,7 @@ Page({
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
     const currentMode = app.globalData.currentMode || 'normal';
-    const mode = this.data.isTimed ? 'timed' : (currentMode === 'challenge' ? 'challenge' : 'normal');
+    const mode = currentMode === 'challenge' ? 'challenge' : (this.data.isTimed ? 'timed' : 'normal');
 
     // 挑战模式：先提交房间结果，云函数会判定胜负并写入数据库
     if (currentMode === 'challenge') {
@@ -261,9 +286,13 @@ Page({
   async submitChallengeAndGo(total, budget, mode) {
     wx.showLoading({ title: '提交结果中…' });
     try {
+      // 上报最新花名，保证结果页头像（取名字首字）反映最新昵称
+      const userInfo = app.globalData.userInfo || {};
+      const myNickname = userInfo.nickname || userInfo.nickName || '';
       const res = await cloud.submitRoomResult({
         code: app.globalData.roomCode,
-        amount: total
+        amount: total,
+        nickname: myNickname
       });
       wx.hideLoading();
 
@@ -286,6 +315,8 @@ Page({
         products: this.data.cart,
         mode
       };
+
+      // 双方都已提交 → 也先到账单页保存记录，再跳转结果
       wx.redirectTo({ url: '/pages/bill/bill' });
     } catch (e) {
       wx.hideLoading();
@@ -314,7 +345,7 @@ Page({
     const total = app.globalData.spent || 0;
     const budget = this.data.budget;
     const currentMode = app.globalData.currentMode || 'normal';
-    const mode = this.data.isTimed ? 'timed' : (currentMode === 'challenge' ? 'challenge' : 'normal');
+    const mode = currentMode === 'challenge' ? 'challenge' : (this.data.isTimed ? 'timed' : 'normal');
 
     // 挑战模式：提交房间结果
     if (currentMode === 'challenge') {

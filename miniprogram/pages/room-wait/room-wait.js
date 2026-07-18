@@ -1,6 +1,7 @@
 // pages/room-wait/room-wait.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
+const { getAvatarChar } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -18,13 +19,52 @@ Page({
       isHost: options.host === '1',
       statusBarHeight: sys.statusBarHeight || 44
     });
-    this.loadPlayers();
-    // 轮询
-    this.data.pollTimer = setInterval(() => this.loadPlayers(), 2000);
+    // 非房主通过分享进入，需要先加入房间
+    if (!this.data.isHost) {
+      this.joinThenPoll();
+    } else {
+      this.loadPlayers();
+      this.data.pollTimer = setInterval(() => this.loadPlayers(), 2000);
+    }
   },
 
   onUnload() {
     if (this.data.pollTimer) clearInterval(this.data.pollTimer);
+  },
+
+  // 非房主先加入房间，再开始轮询
+  async joinThenPoll() {
+    // 等待花名初始化完成（新用户点击邀请链接时，app.initNickname 可能尚未完成）
+    await this.waitForProfile();
+    try {
+      const userInfo = app.globalData.userInfo || {};
+      await cloud.joinRoom({
+        code: this.data.code,
+        player: {
+          nickname: userInfo.nickname || userInfo.nickName || '神秘富豪',
+          avatar: userInfo.avatarUrl || ''
+        }
+      });
+    } catch (e) {
+      // 重名 openid 已存在时 joinRoom 会返回 already:true，不影响
+    }
+    this.loadPlayers();
+    this.data.pollTimer = setInterval(() => this.loadPlayers(), 2000);
+  },
+
+  // 等待 app.initNickname() 完成，超时 10 秒后不再等待
+  waitForProfile() {
+    return new Promise(resolve => {
+      if (app.globalData.profileReady) return resolve();
+      let count = 0;
+      const timer = setInterval(() => {
+        count++;
+        if (app.globalData.profileReady || count >= 50) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 200);
+    });
   },
 
   async loadPlayers() {
@@ -45,7 +85,8 @@ Page({
         const players = res.players.map(p => ({
           ...p,
           isMe: p.openid === openid,
-          nickname: p.openid === openid ? myNick : p.nickname
+          nickname: p.openid === openid ? myNick : p.nickname,
+          avatar: getAvatarChar(p.openid === openid ? myNick : p.nickname)
         }));
         this.setData({ players });
         if (res.status === 'started') {

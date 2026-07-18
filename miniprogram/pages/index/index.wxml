@@ -6,6 +6,30 @@
     </view>
   </view>
 
+  <!-- 欢迎弹窗 -->
+  <view class="welcome-overlay {{showWelcome ? 'show' : ''}}" catchtap="noop">
+    <view class="welcome-card">
+      <view class="welcome-close" bindtap="onWelcomeClose">✕</view>
+      <view class="welcome-sparkle top-left"></view>
+      <view class="welcome-sparkle top-right"></view>
+      <view class="welcome-sparkle bottom-left"></view>
+      <view class="welcome-sparkle bottom-right"></view>
+      <view class="welcome-crown">👑</view>
+      <view class="welcome-greeting">恭迎 <text class="welcome-name">{{nickname}}</text> 阁下驾临</view>
+      <view class="welcome-divider">
+        <view class="welcome-divider-line"></view>
+        <view class="welcome-divider-dot">◆</view>
+        <view class="welcome-divider-line"></view>
+      </view>
+      <view class="welcome-subtitle">全球财富盛宴已为您开启</view>
+      <view class="welcome-subtitle welcome-subtitle-sm">今日，翻谁的牌子？</view>
+      <view class="welcome-btn" bindtap="onWelcomeTap">
+        <text class="welcome-btn-icon">⚡</text>
+        <text>点击，抽取一位富豪</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 头部 -->
   <view class="header">
     <view class="header-title">
@@ -42,9 +66,11 @@
     </view>
   </view>
 
-  <!-- 抽取按钮 -->
+  <!-- 抽取按钮（转动中移除点击事件） -->
   <view class="spin-btn-wrap">
-    <view class="spin-btn {{spinning ? 'disabled' : ''}}" bindtap="onSpin">抽 取</view>
+    <view wx:if="{{spinning}}" class="spin-btn disabled">转 动 中…</view>
+    <view wx:else class="spin-btn" bindtap="onSpin">抽 取</view>
+    <view class="spin-btn-leaderboard" bindtap="onShowLeaderboard">🏆 查看排行</view>
   </view>
 
   <!-- 装饰金币 -->
@@ -66,16 +92,26 @@
     <view class="profile-card" catchtap="noop">
       <view class="profile-close" bindtap="onCloseProfile">✕</view>
 
-      <view class="profile-avatar-wrap">
-        <view class="profile-avatar">{{profileAvatar}}</view>
+      <!-- 头部：头像 + 姓名国籍 -->
+      <view class="profile-header">
+        <view class="profile-avatar-wrap">
+          <view class="profile-avatar">{{profileAvatar}}</view>
+        </view>
+        <view class="profile-header-info">
+          <view class="profile-name">{{profileName}}</view>
+          <view class="profile-nationality">{{profileNationality || '国籍未知'}}</view>
+        </view>
       </view>
 
-      <view class="profile-name">{{profileName}}</view>
+      <!-- 资产卡片 -->
+      <view class="profile-assets-card">
+        <view class="profile-assets-label">个人资产</view>
+        <view class="profile-assets-value">{{profileAssets}}</view>
+      </view>
 
-      <view class="profile-nationality">{{profileNationality || '国籍未知'}}</view>
-
-      <view class="profile-section">
-        <view class="profile-section-label">旗下公司</view>
+      <!-- 旗下公司 -->
+      <view class="profile-block">
+        <view class="profile-block-title">旗下公司</view>
         <view class="profile-chips">
           <block wx:for="{{profileCompanies}}" wx:key="*this">
             <view class="profile-chip">{{item}}</view>
@@ -83,37 +119,47 @@
         </view>
       </view>
 
-      <view class="profile-section">
-        <view class="profile-section-label">个人资产</view>
-        <view class="profile-assets">{{profileAssets}}</view>
-      </view>
-
-      <view class="profile-section">
-        <view class="profile-section-label">性格标签</view>
+      <!-- 性格标签 -->
+      <view class="profile-block" wx:if="{{profileTags.length > 0}}">
+        <view class="profile-block-title">性格</view>
         <view class="profile-chips">
           <block wx:for="{{profileTags}}" wx:key="*this">
-            <view class="profile-chip">{{item}}</view>
+            <view class="profile-chip profile-chip-sm">{{item}}</view>
           </block>
         </view>
       </view>
 
+      <!-- ===== 品位偏好（核心匹配逻辑） ===== -->
+      <view class="profile-match-section" wx:if="{{profileMatchTags.length > 0}}">
+        <view class="profile-match-header">
+          <view class="profile-match-icon">🎯</view>
+          <view class="profile-match-title">品位偏好</view>
+          <view class="profile-match-badge">选购指南</view>
+        </view>
+        <view class="profile-match-rule">
+          <text class="profile-match-rule-icon">⚡</text>
+          <text>仅<text class="profile-match-highlight">标签匹配</text>的商品可置办</text>
+        </view>
+        <view class="profile-match-desc">请围绕以下偏好挑选：</view>
+        <view class="profile-match-tags">
+          <block wx:for="{{profileMatchTags}}" wx:key="*this">
+            <view class="profile-match-tag">
+              <text class="profile-match-tag-icon">✦</text>
+              <text>{{item}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <!-- 口头禅 -->
       <view class="profile-catchphrase">"{{profileCatchphrase}}"</view>
 
+      <!-- 操作按钮 -->
       <view class="profile-actions">
-        <view class="profile-btn-secondary" bindtap="onStartTimed">
-          <text>⏱</text>
-          <text>限时挑战</text>
-        </view>
-        <view class="profile-btn-secondary" bindtap="onStartChallenge">
-          <text>⚔️</text>
-          <text>好友对战</text>
-        </view>
+        <view class="profile-btn-secondary" bindtap="onStartTimed">⏱ 限时挑战</view>
+        <view class="profile-btn-secondary" bindtap="onStartChallenge">⚔️ 好友对战</view>
       </view>
-
-      <view class="profile-btn-primary" bindtap="onStartNormal">
-        <text>$</text>
-        <text>帮他消费</text>
-      </view>
+      <view class="profile-btn-primary" bindtap="onStartNormal">💰 帮他消费</view>
     </view>
   </view>
 </view>

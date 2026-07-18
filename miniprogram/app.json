@@ -5,10 +5,11 @@
     "pages/bill/bill",
     "pages/challenge/challenge",
     "pages/room-wait/room-wait",
-    "pages/room-ready/room-ready",
     "pages/result/result",
     "pages/profile/profile",
-    "pages/feedback/feedback"
+    "pages/feedback/feedback",
+    "pages/leaderboard/leaderboard",
+    "pages/rules/rules"
   ],
   "window": {
     "backgroundTextStyle": "dark",

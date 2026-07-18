@@ -1,7 +1,7 @@
 // pages/index/index.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { shortName } = require('../../utils/format.js');
+const { shortName, getAvatarChar } = require('../../utils/format.js');
 
 // 20 色转盘调色板
 const COLOR_PALETTE = [
@@ -23,6 +23,9 @@ Page({
     wheelConicGradient: '',
     segmentAngle: 0,
     halfAngle: 0,
+    // 欢迎弹窗（onLoad 时展示，onShow 从其他页面返回时不展示）
+    showWelcome: false,
+    nickname: '',
     // 富豪简介卡片
     showProfile: false,
     profileName: '',
@@ -31,12 +34,16 @@ Page({
     profileCompanies: [],
     profileAssets: '',
     profileTags: [],
+    profileMatchTags: [],
     profileCatchphrase: ''
   },
 
   onLoad() {
     const sys = wx.getSystemInfoSync();
     this.setData({ statusBarHeight: sys.statusBarHeight });
+    // 每次进入首页都展示欢迎弹窗（onShow 从其他页面返回时不触发）
+    this.setData({ showWelcome: true });
+    this.refreshNickname();
     this.loadBillionaires();
   },
 
@@ -45,6 +52,14 @@ Page({
     if (this.data.billionaireList.length === 0) {
       this.loadBillionaires();
     }
+    // 每次返回刷新花名，确保与 profile 同步
+    this.refreshNickname();
+  },
+
+  refreshNickname() {
+    const userInfo = app.globalData.userInfo || {};
+    const nickname = userInfo.nickname || userInfo.nickName || '神秘富豪';
+    this.setData({ nickname });
   },
 
   async onPullDownRefresh() {
@@ -170,11 +185,12 @@ Page({
       this.setData({
         showProfile: true,
         profileName: billionaire.name || '',
-        profileAvatar: (billionaire.name || '?')[0],
+        profileAvatar: getAvatarChar(billionaire.name),
         profileNationality: billionaire.nationality || '',
         profileCompanies: billionaire.companies || [],
         profileAssets: formattedAssets,
         profileTags: billionaire.tags || [],
+        profileMatchTags: matchTags || [],
         profileCatchphrase: billionaire.catchphrase || ''
       });
     }, 4000);
@@ -182,6 +198,10 @@ Page({
 
   onShowProfile() {
     wx.navigateTo({ url: '/pages/profile/profile' });
+  },
+
+  onShowLeaderboard() {
+    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
   },
 
   onFeedback() {
@@ -213,6 +233,22 @@ Page({
     app.globalData.budget = app.globalData.currentBillionaire.assets;
     app.globalData.spent = 0;
     wx.redirectTo({ url: '/pages/shop-normal/shop-normal' });
+  },
+
+  // 点击欢迎弹窗按钮 → 关闭弹窗并自动抽取
+  onWelcomeTap() {
+    this.setData({ showWelcome: false });
+    // 延迟一下让弹窗消失动画播放，然后自动触发转盘
+    setTimeout(() => {
+      if (!this.data.spinning && this.data.sectors.length > 0) {
+        this.onSpin();
+      }
+    }, 400);
+  },
+
+  // 点击✕关闭弹窗 → 仅关闭，不自动抽取
+  onWelcomeClose() {
+    this.setData({ showWelcome: false });
   },
 
   noop() {}

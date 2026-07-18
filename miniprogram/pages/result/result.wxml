@@ -10,14 +10,11 @@
     <view class="hero-text">{{heroText}}</view>
     <view class="hero-sub">{{heroSub}}</view>
 
-    <!-- 获得勋章文字 -->
     <view class="badge-notice" wx:if="{{showMedal1}}">
       <text class="badge-notice-text">获得勋章</text>
     </view>
 
-    <!-- 勋章容器：水平排列 -->
     <view class="medals-row">
-      <!-- 勋章1：征服富豪 / 挥霍大师 -->
       <view class="medal-wrap {{showMedal1 ? 'show' : ''}}">
         <view class="medal-glow"></view>
         <view class="medal-body">
@@ -30,7 +27,6 @@
         <view class="medal-label">{{medal1Label}}</view>
       </view>
 
-      <!-- 勋章2：挑战王者（仅胜利者） -->
       <view class="medal-wrap {{showMedal2 ? 'show' : ''}}" wx:if="{{isWinner}}">
         <view class="medal-glow"></view>
         <view class="medal-body">
@@ -45,45 +41,118 @@
     </view>
   </view>
 
-  <!-- 主体内容 -->
-  <view class="status-bar">9:41</view>
-
+  <!-- 导航栏 -->
   <view class="header-row">
-    <view class="back-btn">‹ 返回</view>
+    <view class="back-btn" bindtap="onBack">← 返回</view>
     <view class="title">
       <text class="title-icon">⚔️</text>
       <text>挑战结果</text>
     </view>
-    <view style="width:120rpx;"></view>
-  </view>
-  <view class="divider"></view>
-
-  <view class="winner-card">
-    <view class="crown">👑</view>
-    <view class="winner-label">冠军</view>
-    <view class="winner-name">{{winner.nickname || '富一代·布莱恩'}}</view>
-    <view class="winner-amount">挥霍 {{winner.amountDisplay || '¥52,340,000'}}</view>
+    <view class="header-spacer"></view>
   </view>
 
-  <view class="rank-section">
-    <view class="rank-title">排行榜</view>
-    <block wx:for="{{ranking}}" wx:key="slot">
-      <view class="rank-card {{isWinner && item.rank === 1 ? 'rank-self-winner' : ''}}">
-        <view class="rank-no">{{item.rank}}</view>
-        <view class="rank-avatar">{{item.nickname[0]}}</view>
-        <view class="rank-name">{{item.nickname}}</view>
-        <view class="rank-amount">¥{{item.amountShort}}</view>
+  <!-- 可滚动内容区 -->
+  <scroll-view scroll-y class="content-scroll">
+    <!-- ===== 领奖台（2~4人） ===== -->
+    <view class="podium-section" wx:if="{{showContent && ranking.length >= 2}}">
+      <!-- 第一名：居中放大 -->
+      <view class="podium-champion">
+        <view class="champion-crown">👑</view>
+        <view class="champion-tag">🏆 冠军</view>
+        <view class="champion-avatar {{ranking[0].isSelf ? 'self-glow' : ''}}">{{ranking[0].avatar}}</view>
+        <view class="champion-name">{{ranking[0].nickname}}</view>
+        <view class="champion-amount">¥{{ranking[0].amountShort}}</view>
+        <view class="champion-self-tag" wx:if="{{ranking[0].isSelf}}">我</view>
+        <view class="champion-stand">
+          <text class="stand-num">1</text>
+        </view>
       </view>
-    </block>
-  </view>
 
-  <view class="btn-replay" bindtap="onReplay">
-    <text>↻</text>
-    <text>再来一局</text>
-  </view>
+      <!-- 2~4名：横向排列 -->
+      <view class="podium-row podium-count-{{podiumCount}}">
+        <block wx:for="{{ranking}}" wx:key="rank" wx:for-item="player">
+          <view class="podium-player {{player.isSelf ? 'is-self' : ''}}" wx:if="{{player.rank > 1}}">
+            <view class="podium-avatar-wrap rank-{{player.rank}}">
+              <view class="podium-avatar">{{player.avatar}}</view>
+            </view>
+            <view class="podium-name">{{player.nickname}}</view>
+            <view class="podium-amount">¥{{player.amountShort}}</view>
+            <view class="podium-rank-tag">第{{player.rank}}名</view>
+            <view class="podium-self-tag" wx:if="{{player.isSelf}}">我</view>
+            <view class="podium-stand podium-stand-{{player.rank}}">
+              <text class="stand-num">{{player.rank}}</text>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
 
-  <view class="btn-bill" bindtap="onViewBill">
-    <text>📋</text>
-    <text>查看支付账单</text>
+    <!-- ===== 单人结果卡片（兜底） ===== -->
+    <view class="winner-card" wx:elif="{{showContent && winner}}">
+      <view class="crown">👑</view>
+      <view class="winner-label">冠军</view>
+      <view class="winner-name">{{winner.nickname || '富一代·布莱恩'}}</view>
+      <view class="winner-amount">挥霍 {{winner.amountDisplay || '¥52,340,000'}}</view>
+    </view>
+
+    <!-- ===== 挥霍战报 ===== -->
+    <view class="conquest-card" wx:if="{{showContent}}">
+      <view class="section-header">
+        <text class="section-icon">💰</text>
+        <text class="section-title">挥霍战报</text>
+      </view>
+      <view class="conquest-stats">
+        <view class="stat-item">
+          <view class="stat-label">已挥霍</view>
+          <view class="stat-value">{{spentDisplay}}</view>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <view class="stat-label">富豪预算</view>
+          <view class="stat-value budget">{{budgetDisplay}}</view>
+        </view>
+      </view>
+      <view class="conquest-progress-bar">
+        <view class="conquest-progress-fill {{conquered ? 'over' : ''}}" style="width: {{progress > 100 ? 100 : progress}}%;"></view>
+      </view>
+      <view class="conquest-pct-row">
+        <view class="conquest-pct {{conquered ? 'over' : ''}}">{{progress}}%</view>
+        <view class="conquest-status {{conquered ? 'over' : ''}}">
+          {{conquered ? '🏆 已征服 ' + billionaireName + '！' : '💸 挥霍进行中…'}}
+        </view>
+      </view>
+      <view class="conquest-sub" wx:if="{{conquered}}">所有预算花得一干二净</view>
+    </view>
+
+    <!-- ===== 获得勋章 ===== -->
+    <view class="medals-section" wx:if="{{showContent && medals.length > 0}}">
+      <view class="section-header">
+        <text class="section-icon">🏅</text>
+        <text class="section-title">获得勋章</text>
+      </view>
+      <view class="medals-list">
+        <view class="earned-medal {{item.cls}}" wx:for="{{medals}}" wx:key="label">
+          <view class="earned-medal-icon">
+            <text>{{item.icon}}</text>
+          </view>
+          <view class="earned-medal-label">{{item.label}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 为底部固定按钮留出空间 -->
+    <view class="bottom-safe"></view>
+  </scroll-view>
+
+  <!-- ===== 底部操作按钮（固定吸底） ===== -->
+  <view class="action-bar">
+    <view class="btn-replay" bindtap="onReplay">
+      <text class="btn-icon">↻</text>
+      <text>再来一局</text>
+    </view>
+    <view class="btn-bill" bindtap="onViewBill">
+      <text class="btn-icon">📋</text>
+      <text>查看支付账单</text>
+    </view>
   </view>
 </view>

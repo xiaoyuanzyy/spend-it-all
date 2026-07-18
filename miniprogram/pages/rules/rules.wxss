@@ -1,0 +1,399 @@
+/* pages/rules/rules.wxss */
+
+.page {
+  min-height: 100vh;
+  background: #0a1129;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 导航栏 ===== */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: linear-gradient(180deg, #0d1a3a 0%, #0a1129 100%);
+  border-bottom: 1rpx solid rgba(212, 175, 55, 0.15);
+  flex-shrink: 0;
+  padding-bottom: 20rpx;
+}
+
+.nav-back {
+  position: absolute;
+  left: 24rpx;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #d4af37;
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #d4af37;
+  letter-spacing: 8rpx;
+}
+
+/* ===== 内容区 ===== */
+.content {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 28rpx 28rpx 0;
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+/* ===== 英雄卡片 ===== */
+.hero-card {
+  position: relative;
+  margin-bottom: 40rpx;
+  padding: 40rpx 32rpx 36rpx;
+  background: linear-gradient(160deg, rgba(212, 175, 55, 0.13) 0%, rgba(212, 175, 55, 0.03) 50%, rgba(10, 17, 41, 0.6) 100%);
+  border: 1rpx solid rgba(212, 175, 55, 0.2);
+  border-radius: 20rpx;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-glow {
+  position: absolute;
+  top: -80rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200rpx;
+  height: 200rpx;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hero-icon {
+  font-size: 56rpx;
+  margin-bottom: 12rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-title {
+  font-size: 22rpx;
+  color: #8a8a9a;
+  letter-spacing: 4rpx;
+  margin-bottom: 16rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-divider {
+  width: 48rpx;
+  height: 2rpx;
+  margin: 0 auto 20rpx;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+}
+
+.hero-metric {
+  margin-bottom: 16rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-metric-label {
+  font-size: 26rpx;
+  color: #c4b998;
+}
+
+.hero-metric-val {
+  font-size: 52rpx;
+  font-weight: 800;
+  color: #d4af37;
+  margin: 0 8rpx;
+  letter-spacing: 4rpx;
+  text-shadow: 0 0 32rpx rgba(212, 175, 55, 0.3);
+}
+
+.hero-sub {
+  font-size: 22rpx;
+  color: #5a5a6a;
+  letter-spacing: 1rpx;
+}
+
+/* ===== 区块 ===== */
+.section {
+  margin-bottom: 40rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+  padding-left: 4rpx;
+}
+
+.section-dot {
+  font-size: 18rpx;
+  color: #d4af37;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #d4af37;
+  letter-spacing: 3rpx;
+}
+
+/* ===== 勋章来源网格 ===== */
+.source-grid {
+  display: flex;
+  gap: 14rpx;
+}
+
+.source-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 12rpx 20rpx;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1rpx solid rgba(255, 255, 255, 0.06);
+  border-radius: 14rpx;
+  text-align: center;
+}
+
+.source-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12rpx;
+}
+
+.source-icon-wrap.gold {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.source-icon-wrap.fire {
+  background: rgba(255, 107, 53, 0.12);
+}
+
+.source-icon-wrap.party {
+  background: rgba(52, 152, 219, 0.12);
+}
+
+.source-icon {
+  font-size: 32rpx;
+}
+
+.source-label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #f5f1e6;
+  margin-bottom: 4rpx;
+}
+
+.source-desc {
+  font-size: 18rpx;
+  color: #6a6a7a;
+  line-height: 1.4;
+}
+
+/* ===== 等级阶梯 ===== */
+.tier-ladder {
+  display: flex;
+  flex-direction: column;
+}
+
+.tier-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.tier-row:not(.rookie) {
+  padding-left: 0;
+}
+
+.tier-bar {
+  width: 4rpx;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  position: relative;
+  border-radius: 2rpx;
+  margin-right: 16rpx;
+}
+
+.tier-row.god .tier-bar {
+  height: 20rpx;
+  margin-top: 40rpx;
+}
+
+.tier-row.legend .tier-bar,
+.tier-row.chief .tier-bar,
+.tier-row.senior .tier-bar {
+  height: 36rpx;
+}
+
+.tier-row.junior .tier-bar {
+  height: 36rpx;
+  margin-bottom: 16rpx;
+}
+
+.tier-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.5) 0%, rgba(212, 175, 55, 0.15) 100%);
+  border-radius: 2rpx;
+}
+
+.tier-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 22rpx;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1rpx solid rgba(255, 255, 255, 0.05);
+  border-radius: 14rpx;
+  margin-bottom: 4rpx;
+  position: relative;
+}
+
+.tier-row.god .tier-card {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.12), rgba(255, 46, 99, 0.05));
+  border-color: rgba(255, 107, 53, 0.2);
+}
+
+.tier-row.legend .tier-card {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(245, 227, 161, 0.03));
+  border-color: rgba(212, 175, 55, 0.18);
+}
+
+.tier-row.chief .tier-card {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.06), transparent);
+  border-color: rgba(212, 175, 55, 0.1);
+}
+
+.tier-row.rookie .tier-card {
+  margin-top: 4rpx;
+}
+
+.tier-left {
+  flex-shrink: 0;
+}
+
+.tier-badge {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+}
+
+.god-bg {
+  background: linear-gradient(135deg, #ff6b35, #ff2e63);
+  box-shadow: 0 0 20rpx rgba(255, 107, 53, 0.3);
+}
+
+.legend-bg {
+  background: linear-gradient(135deg, #d4af37, #8a6e1e);
+  box-shadow: 0 0 16rpx rgba(212, 175, 55, 0.3);
+}
+
+.chief-bg {
+  background: linear-gradient(135deg, #8a6e1e, #4a3a0a);
+}
+
+.senior-bg {
+  background: rgba(52, 152, 219, 0.25);
+}
+
+.junior-bg {
+  background: rgba(149, 165, 166, 0.2);
+}
+
+.rookie-bg {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tier-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tier-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #f5f1e6;
+  margin-bottom: 2rpx;
+}
+
+.tier-row.god .tier-name {
+  color: #ff8a5b;
+}
+
+.tier-row.legend .tier-name {
+  color: #f5e3a1;
+}
+
+.tier-cond {
+  display: block;
+  font-size: 20rpx;
+  color: #6a6a7a;
+}
+
+.tier-gap {
+  flex-shrink: 0;
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #d4af37;
+  padding: 4rpx 14rpx;
+  background: rgba(212, 175, 55, 0.08);
+  border-radius: 999rpx;
+}
+
+.tier-row.rookie .tier-card {
+  margin-left: 20rpx;
+}
+
+/* ===== 常见问题 ===== */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.faq-card {
+  padding: 20rpx 22rpx;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 12rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.04);
+  border-left: 3rpx solid rgba(212, 175, 55, 0.2);
+}
+
+.faq-q {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #c4b998;
+  margin-bottom: 8rpx;
+}
+
+.faq-a {
+  font-size: 22rpx;
+  color: #5a5a6a;
+  line-height: 1.6;
+}
+
+/* ===== 底部 ===== */
+.bottom-space {
+  height: 40rpx;
+}

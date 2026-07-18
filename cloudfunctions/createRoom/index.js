@@ -23,10 +23,11 @@ exports.main = async (event) => {
         nickname: (event.host && event.host.nickname) || '玩家',
         avatar: (event.host && event.host.avatar) || '',
         isHost: true,
-        slot: 'P1',
-        amount: 0
+        slot: 'P1'
+        // amount 初始不设置，由 submitRoomResult 提交时填充
       }
     ],
+    submittedCount: 0,
     createdAt: Date.now(),
     updatedAt: Date.now()
   };

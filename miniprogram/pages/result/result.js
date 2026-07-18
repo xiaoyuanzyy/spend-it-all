@@ -1,6 +1,6 @@
 // pages/result/result.js
 const app = getApp();
-const { formatCNY, formatK } = require('../../utils/format.js');
+const { formatCNY, formatK, getAvatarChar } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -17,29 +17,65 @@ Page({
     heroSub: '',
     isWinner: false,
     isOverspent: false,
-    showContent: false
+    showContent: false,
+    // 征服信息
+    billionaireName: '',
+    spentDisplay: '',
+    budgetDisplay: '',
+    progress: 0,
+    conquered: false,
+    // 勋章列表（页面常驻展示）
+    medals: [],
+    earnedMedal1: '',
+    earnedMedal2: ''
   },
 
   onLoad() {
     const challengeResult = app.globalData.challengeResult || { players: [] };
     const billResult = app.globalData.billResult || {};
+    const billionaire = billResult.billionaire || {};
     const isWinner = billResult.success === true;
     const progress = billResult.budget > 0 ? Math.round((billResult.total || 0) / billResult.budget * 100) : 0;
     const isOverspent = progress >= 100;
+    const conquered = progress >= 100;
 
-    // 排行榜
+    // 当前用户 openid
+    let myOpenid = '';
+    try { myOpenid = wx.getStorageSync('openid') || ''; } catch (e) { /* ignore */ }
+
+    // 排行榜（按挥霍金额降序）
     const sorted = [...challengeResult.players].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+
+    const ranking = sorted.map((p, i) => ({
+      ...p,
+      rank: i + 1,
+      avatar: getAvatarChar(p.nickname),
+      amountDisplay: formatCNY(p.amount || 0),
+      amountShort: formatK(p.amount || 0),
+      isSelf: myOpenid && p.openid ? p.openid === myOpenid : (i === 0 ? isWinner : false)
+    }));
+
+    // 构建勋章列表
+    const earnedMedal1 = conquered ? '征服富豪勋章' : '';
+    const earnedMedal2 = isWinner ? '挑战王者勋章' : '';
+    const medals = [];
+    if (earnedMedal1) medals.push({ icon: '🏅', label: earnedMedal1, cls: '' });
+    if (earnedMedal2) medals.push({ icon: '👑', label: earnedMedal2, cls: 'challenge' });
+
     this.setData({
       winner: sorted[0] || {},
-      ranking: sorted.map((p, i) => ({
-        ...p,
-        rank: i + 1,
-        amountDisplay: formatCNY(p.amount || 0),
-        amountShort: formatK(p.amount || 0)
-      })),
+      ranking,
+      podiumCount: Math.max(0, sorted.length - 1),
       isWinner,
       isOverspent,
-      progress
+      conquered,
+      progress,
+      billionaireName: billionaire.name || '富豪',
+      spentDisplay: formatCNY(billResult.total || 0),
+      budgetDisplay: formatCNY(billResult.budget || 0),
+      earnedMedal1,
+      earnedMedal2,
+      medals
     });
 
     // 触发动画
@@ -54,7 +90,7 @@ Page({
     }
   },
 
-  // ========== 胜利者礼花 + 2个勋章 ==========
+  // ========== 胜利者礼花 + 勋章 ==========
   startWinnerCelebration(isOverspent) {
     const heroText = isOverspent
       ? '🏆 挑战胜利！还征服了富豪！🏆'
@@ -62,7 +98,7 @@ Page({
     const heroSub = isOverspent
       ? '不仅赢了对手，还把预算花得一干二净'
       : '你比对手更懂得花钱的艺术';
-    const medal1Label = isOverspent ? '征服富豪勋章' : '挥霍大师勋章';
+    const medal1Label = isOverspent ? '征服富豪勋章' : '';
     const medal2Label = '挑战王者勋章';
 
     this.setData({
@@ -74,15 +110,21 @@ Page({
     });
     this.startFireworks();
 
-    // 勋章1：延迟 1s
-    this._medal1Timer = setTimeout(() => {
-      this.setData({ showMedal1: true });
-    }, 1000);
-
-    // 勋章2：延迟 1.8s
-    this._medal2Timer = setTimeout(() => {
-      this.setData({ showMedal2: true });
-    }, 1800);
+    // 有征服勋章时才展示勋章1
+    if (isOverspent) {
+      this._medal1Timer = setTimeout(() => {
+        this.setData({ showMedal1: true });
+      }, 1000);
+      // 勋章2：延迟 1.8s
+      this._medal2Timer = setTimeout(() => {
+        this.setData({ showMedal2: true });
+      }, 1800);
+    } else {
+      // 只有挑战王者勋章，1s 后展示
+      this._medal1Timer = setTimeout(() => {
+        this.setData({ showMedal2: true });
+      }, 1000);
+    }
 
     // 5.5s 后收起动画
     this._endTimer = setTimeout(() => {
@@ -138,6 +180,10 @@ Page({
     if (this._endTimer) clearTimeout(this._endTimer);
   },
 
+  onBack() {
+    wx.navigateBack();
+  },
+
   onTapOverlay() {
     if (this._medal1Timer) clearTimeout(this._medal1Timer);
     if (this._medal2Timer) clearTimeout(this._medal2Timer);
@@ -151,6 +197,6 @@ Page({
   },
 
   onViewBill() {
-    wx.navigateTo({ url: '/pages/bill/bill' });
+    wx.navigateTo({ url: '/pages/bill/bill?from=result' });
   }
 });

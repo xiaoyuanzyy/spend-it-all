@@ -1,7 +1,7 @@
 // pages/challenge/challenge.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, shortName } = require('../../utils/format.js');
+const { formatMoney, getAvatarChar } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -21,11 +21,10 @@ Page({
     // 读取全局数据中的富豪信息
     const b = app.globalData.currentBillionaire;
     if (b && b.name) {
-      const dName = shortName(b.name);
       this.setData({
         billionaire: {
-          name: dName,
-          avatar: (dName || '?')[0],
+          name: b.name,
+          avatar: getAvatarChar(b.name),
           assetsDisplay: formatMoney(b.assets || 0)
         }
       });
@@ -45,7 +44,7 @@ Page({
 
     cloud.createRoom({
       host: {
-        nickname: userInfo.nickname || userInfo.nickName || '玩家',
+        nickname: userInfo.nickname || userInfo.nickName || '神秘富豪',
         avatar: userInfo.avatarUrl || ''
       },
       billionaire: b || null
@@ -74,7 +73,7 @@ Page({
     cloud.joinRoom({
       code: code,
       player: {
-        nickname: userInfo.nickname || userInfo.nickName || '玩家',
+        nickname: userInfo.nickname || userInfo.nickName || '神秘富豪',
         avatar: userInfo.avatarUrl || ''
       }
     }).then(() => {
