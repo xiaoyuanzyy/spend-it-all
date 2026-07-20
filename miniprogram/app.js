@@ -107,7 +107,7 @@ App({
       console.error('当前微信版本过低，请升级到最新微信');
     } else {
       wx.cloud.init({
-        env: 'cloud1-d2g5khfkv2a660d00',
+        env: 'cloud1-d7gtho7lwbea60e4f',
         traceUser: true
       });
     }

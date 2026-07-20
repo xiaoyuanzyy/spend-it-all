@@ -85,7 +85,12 @@ Page({
       return;
     }
 
-    // 随机打乱取 8 位
+    // 过滤掉中国国籍的富豪，再随机打乱取 8 位
+    list = list.filter(b => b.nationality !== '中国');
+    if (list.length < 8) {
+      wx.showToast({ title: '富豪数据不足，请联系管理员', icon: 'none' });
+      return;
+    }
     const shuffled = [...list].sort(() => Math.random() - 0.5);
     list = shuffled.slice(0, 8);
 

@@ -34,7 +34,7 @@ function loadEnv() {
 }
 loadEnv();
 
-const ENV_ID = process.env.CLOUDBASE_ENV || 'cloud1-d2g5khfkv2a660d00';
+const ENV_ID = process.env.CLOUDBASE_ENV || 'cloud1-d7gtho7lwbea60e4f';
 const SECRET_ID = process.env.CLOUDBASE_SECRET_ID;
 const SECRET_KEY = process.env.CLOUDBASE_SECRET_KEY;
 
@@ -117,59 +117,89 @@ async function uploadProductImage(buffer, cloudPath) {
 }
 
 // ==================== AI 图片生成 ====================
+// 通用负向提示词：排除文字、水印、扭曲、低质量等干扰元素
+const NEGATIVE_PROMPT = 'text, watermark, logo, words, letters, signature, label, brand name, deformed, blurry, low quality, bad anatomy, extra limbs, cropped, frame, border, collage, multiple views, abstract, illustration, painting, sketch';
+
+// 品类视角英文提示：为 Flux 提供品类级别的视觉上下文，告诉模型"这是什么类型的东西"
+// productId 格式为 gen_标签_序号，从中提取标签后匹配品类提示
+const TAG_CATEGORY_HINTS = {
+  '超级豪宅':   'luxury mansion exterior, architectural photography',
+  '私人岛屿':   'private tropical island, aerial view, turquoise ocean',
+  '城堡庄园':   'historic European castle, grand estate, vineyard chateau',
+  '云端公寓':   'luxury penthouse apartment interior, skyscraper city view',
+  '超级跑车':   'hypercar, luxury sports car, automotive photography',
+  '经典名车':   'vintage classic car, collector automobile, retro',
+  '私人飞机':   'luxury private jet, business aircraft exterior',
+  '超级游艇':   'luxury mega yacht, superyacht on ocean water',
+  '深海潜器':   'deep-sea submersible, personal submarine underwater',
+  '西方油画':   'famous oil painting on canvas, ornate gold frame',
+  '中国书画':   'Chinese calligraphy ink painting scroll, silk mounting',
+  '当代艺术':   'contemporary art sculpture or installation, modern gallery',
+  '古董珍玩':   'antique Chinese porcelain, bronze, jade collectible artifact',
+  '传世腕表':   'luxury mechanical wristwatch, detailed dial and strap',
+  '稀世珠宝':   'diamond jewelry, precious gemstone necklace or ring',
+  '高级定制':   'haute couture fashion dress, runway garment on mannequin',
+  '奢侈包袋':   'luxury designer handbag, leather bag purse, product shot',
+  '名流礼服':   'elegant bespoke tuxedo suit, formal menswear clothing',
+  '名庄红酒':   'premium red wine bottle with label, fine vintage',
+  '珍稀烈酒':   'rare whiskey bottle, aged single malt scotch with glass',
+  '顶级食材':   'luxury gourmet food ingredient, fine dining delicacy',
+  '奢华雪茄':   'premium cigar in wooden humidor box, tobacco',
+  '设计师家具': 'iconic designer furniture, chair or table, interior design',
+  '私人影院':   'luxury home theater room interior, cinema screen',
+  '智能机器人': 'advanced humanoid robot, AI robot on display',
+  '体育俱乐部': 'professional sports team jersey, stadium, trophy',
+  '赛马竞技':   'thoroughbred racehorse galloping, equestrian sport',
+  '高尔夫会籍': 'premium golf course landscape, green fairway',
+  '极限装备':   'extreme sports equipment gear, outdoor adventure',
+  '太空旅行':   'spaceship spacecraft, space tourism, zero gravity',
+  '极地探险':   'polar expedition scene, arctic ice landscape',
+  '赛事包厢':   'VIP stadium luxury suite interior, premium seating',
+  '数字资产':   'digital NFT art displayed on screen, crypto collectible',
+  '军事藏品':   'military vehicle, vintage warplane, collectible memorabilia',
+  '化石陨石':   'dinosaur fossil skeleton, meteorite rock specimen',
+  '稀有书籍':   'rare antique book, leather-bound first edition',
+  '乐器名琴':   'Stradivarius violin or grand piano, musical instrument',
+  '电影道具':   'iconic movie prop replica, film memorabilia collectible',
+  '猛禽异宠':   'exotic rare animal pet, wildlife close-up',
+  '改造奇物':   'converted unique architecture, repurposed industrial structure',
+  '贵金属':     'precious metal gold bullion bar, silver ingot on white',
+  '名流会所':   'exclusive private members club interior, elegant lounge',
+  '私人博物馆': 'modern private art museum gallery, architectural exterior',
+  '私人牧场':   'luxury ranch estate landscape, vast grassland and mountains',
+  '私人酒庄':   'vineyard estate, wine chateau, rolling hills with grapes',
+  '古董枪支':   'antique vintage firearm, collectible engraved gun',
+  '顶奢帐篷':   'luxury safari glamping tent, wilderness accommodation',
+};
+
+// 产品摄影风格：每种风格强调 isolated product shot，确保画面主体即为商品本身
 const PHOTO_STYLES = [
-  'studio lighting, white background, 8K ultra HD, high quality',
-  'dramatic rim lighting, dark moody background, cinematic, 8K',
-  'warm golden hour light, elegant display case, luxury boutique, 8K',
-  'clean minimalist aesthetic, marble surface, natural daylight, 8K',
-  'front angle closeup, shallow depth of field, product photography, 8K',
-  'isometric 3/4 view, soft diffused lighting, premium catalog style, 8K',
-  'hero shot composition, reflective surface, professional commercial, 8K',
-  'editorial magazine style, creative angle, high contrast, 8K',
+  'isolated product shot, studio lighting, pure white background, ultra HD, sharp focus, commercial catalog',
+  'isolated product shot, dramatic rim lighting, pure black background, cinematic, sharp focus, luxury showcase',
+  'isolated product shot, warm golden hour light, elegant display pedestal, luxury boutique style, sharp focus',
+  'isolated product shot, clean minimalist aesthetic, white marble surface, natural daylight, sharp focus',
+  'isolated product shot, front angle closeup, shallow depth of field, professional product photography, sharp focus',
+  'isolated product shot, 3/4 angle view, soft diffused studio lighting, premium catalog style, sharp focus',
+  'isolated product shot, hero composition, reflective glass surface, professional commercial photography, sharp focus',
+  'isolated product shot, centered composition, gradient studio background, e-commerce white background, sharp focus',
 ];
-
-// 奢侈品前缀词池（与 syncBillionaires.mjs 中 LUXURY_PREFIX 一致）
-const LUXURY_PREFIX = [
-  '限量版', '定制款', '至尊', '皇家', '奢华', '私人',
-  '大师级', '传世', '典藏', '御用', '传奇', '至臻',
-  '非凡', '瑰丽', '绝世', '巅峰', '璀璨', '荣耀', '殿堂', '经典',
-];
-
-// 常见装饰性后缀（删除后不影响核心语义）
-const DECORATIVE_SUFFIXES = [
-  '套装', '全套', '年卡', '体验', '服务', '课程', '通票',
-  '份额', '合约', '会员', '版权', '特权', '席位', '座位',
-  '方案', '授权', '认证', '资格', '命名权', '冠名权',
-];
-
-// 去前缀 + 去后缀 = 纯核心名词
-function extractCoreSubject(productName) {
-  let core = productName;
-  // 1. 去前缀（如"钛合金"→去掉）
-  for (const prefix of LUXURY_PREFIX) {
-    if (core.startsWith(prefix) && core.length > prefix.length) {
-      core = core.slice(prefix.length);
-      break;
-    }
-  }
-  // 2. 去后缀（如"...套装"→去掉），只去一次，避免过度裁剪
-  for (const suffix of DECORATIVE_SUFFIXES) {
-    if (core.endsWith(suffix) && core.length > suffix.length) {
-      core = core.slice(0, -suffix.length);
-      break;
-    }
-  }
-  return core;
-}
 
 function generateImageUrl(productName, productId) {
   const styleHash = Array.from(productId).reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const style = PHOTO_STYLES[styleHash % PHOTO_STYLES.length];
-  const core = extractCoreSubject(productName);
-  // 不使用引号包裹，直接描述：这是某个商品的商业摄影
-  const prompt = `${core}, commercial product photography, ${style}`;
+
+  // 从 productId 解析标签 → 注入品类级英文视觉上下文，让 Flux 精准理解商品类型
+  // productId 格式：gen_标签名_序号（如 gen_超级跑车_000）
+  const tagMatch = productId.match(/^gen_(.+)_\d{3}$/);
+  const tag = tagMatch ? tagMatch[1] : '';
+  const categoryHint = TAG_CATEGORY_HINTS[tag] || 'luxury product';
+
+  // 品类上下文 → 具体商品名 → 摄影指令，三层渐进让模型严格对齐商品
+  const prompt = `a photo of ${categoryHint}, specifically ${productName}, ${style}`;
   const encoded = encodeURIComponent(prompt);
-  return `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&nologo=true&seed=${styleHash}&model=flux`;
+  const negEncoded = encodeURIComponent(NEGATIVE_PROMPT);
+
+  return `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&nologo=true&seed=${styleHash}&model=flux&negative=${negEncoded}&enhance=true`;
 }
 
 // ==================== 请求限流 ====================
@@ -290,12 +320,12 @@ function printHelp() {
     --help, -h           显示帮助
 
   示例:
-    node backfillImages.mjs                          # 扫描库中所有缺图商品并补图
-    node backfillImages.mjs --name "至尊量子计算机"    # 只补指定商品
-    node backfillImages.mjs --id "gen_科技创新_000"    # 按 ID 指定商品
-    node backfillImages.mjs -f                        # 强制重新生成所有商品图片
-    node backfillImages.mjs --dry-run                 # 预览哪些商品缺图
-    node backfillImages.mjs -c 5 -m                   # 5 并发 + 只补缺图
+    node backfillImages.mjs                              # 扫描库中所有缺图商品并补图
+    node backfillImages.mjs --name "布加迪赤龙超跑旗舰版"  # 按商品名补图（直接传原名）
+    node backfillImages.mjs --id "gen_超级跑车_000"       # 按 ID 指定商品
+    node backfillImages.mjs -f                            # 强制重新生成所有商品图片
+    node backfillImages.mjs --dry-run                     # 预览哪些商品缺图
+    node backfillImages.mjs -c 5 -m                       # 5 并发 + 只补缺图
   `);
 }
 
