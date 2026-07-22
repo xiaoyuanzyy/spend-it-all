@@ -1,7 +1,7 @@
 // pages/bill/bill.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, formatCNY } = require('../../utils/format.js');
+const { formatCNY } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -19,7 +19,6 @@ Page({
     billionCatchphrase: '',
     mode: 'normal',
     modeLabel: '普通消费',
-    scrollHeight: 400,
     totalQty: 0,
     itemTypes: 0,
     progress: 0,
@@ -51,7 +50,14 @@ Page({
       wx.showLoading({ title: '加载账单…' });
       result = await this.fetchSharedBill(options.shareId);
       wx.hideLoading();
-      if (result) app.globalData.billResult = result;
+      if (result) {
+        app.globalData.billResult = result;
+      } else {
+        // 分享账单加载失败，跳回首页
+        wx.showToast({ title: '账单加载失败，请重试', icon: 'none', duration: 2000 });
+        setTimeout(() => wx.reLaunch({ url: '/pages/index/index' }), 2000);
+        return;
+      }
     }
     if (!result || !result.total) {
       result = { products: [], total: 0, budget: 0, success: false, billionaire: null };
@@ -62,7 +68,7 @@ Page({
     const billionaire = result.billionaire || { name: '富豪' };
     const items = (result.products || []).map(p => ({
       ...p,
-      unitPriceDisplay: formatMoney(p.price)
+      unitPriceDisplay: formatCNY(p.price)
     }));
     const over = Math.max(0, result.total - result.budget);
     const remaining = Math.max(0, result.budget - result.total);
@@ -88,9 +94,10 @@ Page({
     let totalQty = 0;
     items.forEach(item => { totalQty += item.qty || 0; });
     // 模式映射
-    const modeMap = { normal: '普通消费', timed: '限时消费', challenge: '限时挑战' };
+    const modeMap = { normal: '普通消费', timed: '限时消费', challenge: '好友对战' };
     const modeLabel = modeMap[result.mode] || '普通消费';
     const isChallenge = result.mode === 'challenge';
+    const isTimed = result.mode === 'timed';
     this.setData({
       items,
       totalDisplay: formatCNY(result.total),
@@ -114,7 +121,10 @@ Page({
     });
     // 花费达到 100%：征服富豪标记
     if (progress >= 100) {
-      const medalName = isChallenge ? '获得征服富豪勋章' : '获得挥霍大师勋章';
+      let medalName;
+      if (isChallenge) medalName = '获得征服富豪勋章';
+      else if (isTimed) medalName = '获得限时征服勋章';
+      else medalName = '获得挥霍大师勋章';
       this.setData({ conquered: true, conqueredMedalName: medalName });
     }
     // 挑战模式胜利：标记
@@ -129,9 +139,9 @@ Page({
       }
     }
 
-    // 非分享的原始账单：保存到云数据库供分享使用
+    // 非分享的原始账单：保存到云数据库供分享使用（必须 await，确保 shareId 就绪后才能分享）
     if (!isShared && !result.fromHistory && options.from !== 'result') {
-      this.saveSharedBill(result);
+      await this.saveSharedBill(result);
     }
 
     // 分享账单或历史账单：跳过上传和礼花
@@ -143,6 +153,10 @@ Page({
     // 从结果页回来看账单：不重复上传、不启动挑战轮询（否则会自动跳回结果页）
     if (options.from === 'result') {
       this.setData({ period: `2026财年 — 第${result.period || '?'}期` });
+      // 有成就时，跳过动画直接显示勋章（动画已在结果页展示过）
+      if (progress >= 100 || (isChallenge && result.success)) {
+        this.setData({ showAchievements: true });
+      }
       return;
     }
     // 先上传账单，完成后查询期数
@@ -192,17 +206,6 @@ Page({
     // 缓存窗口尺寸给礼花用
     this._screenW = sys.windowWidth;
     this._screenH = sys.windowHeight;
-
-    // 测量固定区域高度：header + 消费概览卡片 + 底部操作栏
-    const query = wx.createSelectorQuery();
-    let headerH = 0, cardH = 0, bottomH = 0;
-    query.select('#bill-header').boundingClientRect(rect => { if (rect) headerH = rect.height; });
-    query.select('.spend-hero').boundingClientRect(rect => { if (rect) cardH = rect.height + 24; });
-    query.select('#bill-bottom').boundingClientRect(rect => { if (rect) bottomH = rect.height; });
-    query.exec(() => {
-      const h = sys.windowHeight - headerH - cardH - bottomH - 20;
-      if (h > 0) this.setData({ scrollHeight: h });
-    });
   },
 
   uploadBill(result) {
@@ -314,14 +317,18 @@ Page({
       });
     }
     const isChallenge = mode === 'challenge';
-    const medalName = isChallenge ? '获得征服富豪勋章' : '获得挥霍大师勋章';
+    const isTimed = mode === 'timed';
+    let medalName;
+    if (isChallenge) medalName = '获得征服富豪勋章';
+    else if (isTimed) medalName = '获得限时征服勋章';
+    else medalName = '获得挥霍大师勋章';
     this.setData({
       showFireworks: true,
       confetti,
       conqueredText: '恭喜你征服了' + (name || '富豪') + '！',
       conqueredSub: isChallenge
         ? '🎉 一边对战一边把钱花完了！🎉'
-        : '🎉 挥霍大师！所有预算花得一干二净 🎉',
+        : (isTimed ? '🎉 争分夺秒地把钱花完了！🎉' : '🎉 挥霍大师！所有预算花得一干二净 🎉'),
       medalLabel: medalName,
       conquered: true,
       conqueredMedalName: medalName
@@ -374,30 +381,33 @@ Page({
 
   onShareAppMessage() {
     const { billionName, totalDisplay, progress, shareId } = this.data;
+    // shareId 未就绪时不提供分享路径，避免接收方跳转到首页
+    if (!shareId) {
+      wx.showToast({ title: '账单数据准备中，请稍后再分享', icon: 'none', duration: 2000 });
+      return { title: '', path: '/pages/index/index' };
+    }
     const done = progress >= 100;
     return {
       title: `我替${billionName}${done ? '花光了' : '花了'}${totalDisplay}${done ? '' : '，进度' + progress + '%'}|花不完不许走`,
-      path: shareId ? `/pages/bill/bill?shareId=${shareId}` : '/pages/index/index'
+      path: `/pages/bill/bill?shareId=${shareId}`
     };
   },
 
   // 保存账单到共享库，返回文档 ID 供分享使用
   async saveSharedBill(result) {
     try {
-      const db = wx.cloud.database();
-      const { _id } = await db.collection('sharedBills').add({
-        data: {
-          total: result.total || 0,
-          budget: result.budget || 0,
-          billionaire: result.billionaire || {},
-          products: result.products || [],
-          mode: result.mode || 'normal',
-          success: result.success,
-          createdAt: Date.now()
-        }
+      const res = await cloud.saveSharedBill({
+        total: result.total || 0,
+        budget: result.budget || 0,
+        billionaire: result.billionaire || {},
+        products: result.products || [],
+        mode: result.mode || 'normal',
+        success: result.success
       });
-      this.setData({ shareId: _id });
-      console.log('[bill] sharedBill saved:', _id);
+      if (res && res.ok && res._id) {
+        this.setData({ shareId: res._id });
+        console.log('[bill] sharedBill saved:', res._id);
+      }
     } catch (e) {
       console.error('[bill] saveSharedBill failed:', e);
     }
@@ -406,9 +416,12 @@ Page({
   // 从共享库拉取他人分享的账单
   async fetchSharedBill(shareId) {
     try {
-      const db = wx.cloud.database();
-      const { data } = await db.collection('sharedBills').doc(shareId).get();
-      if (!data) throw new Error('账单不存在');
+      const res = await cloud.getSharedBill(shareId);
+      if (!res || !res.ok || !res.data) {
+        wx.showToast({ title: '账单不存在或已过期', icon: 'none' });
+        return null;
+      }
+      const data = res.data;
       return {
         products: data.products || [],
         total: data.total || 0,

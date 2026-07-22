@@ -89,9 +89,20 @@
       <text class="total-amount">{{totalDisplay}}</text>
       <text class="total-sub">商品 {{itemTypes}} 种 | 共 {{totalQty}} 件</text>
     </view>
-    <view class="confirm-btn" bindtap="onConfirm">确认配置</view>
+    <view class="confirm-btn" bindtap="onConfirm" wx:if="{{!waiting}}">确认配置</view>
+    <view class="confirm-btn disabled" wx:else>⏳ 等待中</view>
   </view>
 
   <!-- 反应气泡 -->
   <view wx:if="{{showReaction}}" class="reaction-bubble {{reactionType}}">{{reaction}}</view>
+
+  <!-- 挑战等待遮罩 -->
+  <view class="waiting-overlay" wx:if="{{waiting}}">
+    <view class="waiting-card">
+      <view class="waiting-spinner"></view>
+      <view class="waiting-title">已提交</view>
+      <view class="waiting-text">{{waitingText}}</view>
+      <view class="waiting-sub">对手还在选购中，请耐心等待…</view>
+    </view>
+  </view>
 </view>

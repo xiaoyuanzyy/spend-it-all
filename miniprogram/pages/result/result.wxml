@@ -10,12 +10,14 @@
     <view class="hero-text">{{heroText}}</view>
     <view class="hero-sub">{{heroSub}}</view>
 
-    <view class="badge-notice" wx:if="{{showMedal1}}">
+    <!-- 获得勋章提示：任一勋章展示时出现 -->
+    <view class="badge-notice" wx:if="{{showMedal1 || showMedal2}}">
       <text class="badge-notice-text">获得勋章</text>
     </view>
 
-    <view class="medals-row">
-      <view class="medal-wrap {{showMedal1 ? 'show' : ''}}">
+    <!-- 勋章区：一个居中，两个并排 -->
+    <view class="medals-row medals-count-{{(isOverspent ? 1 : 0) + (isWinner ? 1 : 0)}}">
+      <view class="medal-wrap {{showMedal1 ? 'show' : ''}}" wx:if="{{isOverspent}}">
         <view class="medal-glow"></view>
         <view class="medal-body">
           <view class="medal-ribbon medal-ribbon-l"></view>
@@ -52,7 +54,7 @@
   </view>
 
   <!-- 可滚动内容区 -->
-  <scroll-view scroll-y class="content-scroll">
+  <scroll-view scroll-y class="content-scroll" style="height: {{scrollHeight}}px;">
     <!-- ===== 领奖台（2~4人） ===== -->
     <view class="podium-section" wx:if="{{showContent && ranking.length >= 2}}">
       <!-- 第一名：居中放大 -->

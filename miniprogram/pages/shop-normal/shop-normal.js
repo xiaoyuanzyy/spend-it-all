@@ -1,7 +1,7 @@
 // pages/shop-normal/shop-normal.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, formatFull, formatM } = require('../../utils/format.js');
+const { formatCNY } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -9,12 +9,12 @@ Page({
     budget: 0,
     remaining: 0,
     spent: 0,
-    budgetDisplay: '$0',
+    budgetDisplay: '¥0',
     budgetPercent: 100,
     products: [],
     allProducts: [],       // 全量商品（缓存）
     cart: [],
-    totalDisplay: '$0',
+    totalDisplay: '¥0',
     totalQty: 0,
     itemTypes: 0,
     reaction: '',
@@ -31,7 +31,11 @@ Page({
     timerLabel: '⏱ 限时消费',
     remain: 30,
     progress: 100,
-    timer: null
+    timer: null,
+    // 挑战等待
+    waiting: false,
+    waitingText: '⏳ 等待对手完成…',
+    challengePollTimer: null
   },
 
   onLoad() {
@@ -45,7 +49,7 @@ Page({
     this.setData({
       budget: budget,
       remaining: budget,
-      budgetDisplay: formatFull(budget),
+      budgetDisplay: formatCNY(budget),
       budgetPercent: 100
     });
     if (isTimed) this.startCountdown();
@@ -53,11 +57,13 @@ Page({
 
   onBack() {
     if (this.data.timer) clearInterval(this.data.timer);
+    this.stopChallengePoll();
     wx.reLaunch({ url: '/pages/index/index' });
   },
 
   onUnload() {
     if (this.data.timer) clearInterval(this.data.timer);
+    this.stopChallengePoll();
   },
 
   onReady() {
@@ -86,7 +92,7 @@ Page({
             ...p,
             id: pid,
             image: p.image || '',
-            priceDisplay: formatMoney(p.price),
+            priceDisplay: formatCNY(p.price),
             purchased: 0,
             productTags,
             matched
@@ -157,6 +163,7 @@ Page({
 
   // 出售：数量归零
   onSell(e) {
+    if (this.data.waiting) return;
     const id = e.currentTarget.dataset.id;
     const products = this.data.products.map(p =>
       String(p.id) === String(id) ? { ...p, purchased: 0 } : p
@@ -173,7 +180,7 @@ Page({
         total += sub;
         cart.push({
           id: p.id, name: p.name, price: p.price,
-          qty: p.purchased, subtotalDisplay: formatMoney(sub)
+          qty: p.purchased, subtotalDisplay: formatCNY(sub)
         });
       }
     });
@@ -190,16 +197,17 @@ Page({
     cart.forEach(c => { totalQty += c.qty; });
     this.setData({
       products, cart,
-      totalDisplay: formatM(total),
+      totalDisplay: formatCNY(total),
       totalQty,
       itemTypes: cart.length,
       remaining: remaining,
-      budgetDisplay: formatFull(remaining),
+      budgetDisplay: formatCNY(remaining),
       budgetPercent: percent
     });
   },
 
   onBuy(e) {
+    if (this.data.waiting) return;
     const id = e.currentTarget.dataset.id;
     const product = this.data.products.find(p => String(p.id) === String(id));
     if (!product) return;
@@ -253,6 +261,7 @@ Page({
   },
 
   onConfirm() {
+    if (this.data.waiting) return;
     // 普通模式下，没有选择任何商品时提示
     if (!this.data.isTimed && this.data.totalQty === 0) {
       wx.showToast({ title: '还没置办商品，快去逛逛吧', icon: 'none', duration: 2000 });
@@ -282,45 +291,94 @@ Page({
     wx.redirectTo({ url: '/pages/bill/bill' });
   },
 
-  // 挑战模式：提交结果 → 云函数判定胜负
+  // 挑战模式：提交结果 → 云函数判定胜负 → 等待对手或直接跳结果
   async submitChallengeAndGo(total, budget, mode) {
     wx.showLoading({ title: '提交结果中…' });
     try {
-      // 上报最新花名，保证结果页头像（取名字首字）反映最新昵称
       const userInfo = app.globalData.userInfo || {};
       const myNickname = userInfo.nickname || userInfo.nickName || '';
+
+      // 1. 先保存账单到数据库（submitRoomResult 后需更新账单的 success 字段）
+      await cloud.saveBill({
+        billionaireId: (this.data.billionaire && this.data.billionaire.id) || 0,
+        billionaireName: (this.data.billionaire && this.data.billionaire.name) || '富豪',
+        products: this.data.cart,
+        total: total,
+        budget: budget,
+        over: Math.max(0, total - budget),
+        success: null,
+        mode: 'challenge',
+        createdAt: Date.now(),
+        nickname: myNickname
+      });
+
+      // 2. 提交房间结果
       const res = await cloud.submitRoomResult({
         code: app.globalData.roomCode,
         amount: total,
         nickname: myNickname
       });
+
       wx.hideLoading();
 
-      // 存储挑战结果（结算页面用）
+      // 3. 存储结果数据供 result 页面使用
       app.globalData.challengeResult = res;
 
-      // 判定胜负：只有全部玩家都提交了才能确定，否则留待云函数后续更新
-      let success = null;
-      if (res.allDone && res.players) {
-        // 从自己的花费对比最高花费来推断胜负
-        const maxAmount = Math.max(...res.players.map(p => p.amount || 0));
-        success = total >= maxAmount;
-      }
-
+      const players = res.players || [];
+      const maxAmount = res.allDone ? Math.max(...players.map(p => p.amount || 0)) : 0;
       app.globalData.billResult = {
         total,
         budget,
-        success,
+        success: res.allDone ? (total >= maxAmount) : null,
         billionaire: this.data.billionaire,
         products: this.data.cart,
-        mode
+        mode: 'challenge'
       };
 
-      // 双方都已提交 → 也先到账单页保存记录，再跳转结果
-      wx.redirectTo({ url: '/pages/bill/bill' });
+      if (res.allDone) {
+        // 双方都已提交 → 直接跳结果页
+        wx.redirectTo({ url: '/pages/result/result' });
+      } else {
+        // 等待对手 → 停止计时器，显示等待遮罩
+        if (this.data.timer) clearInterval(this.data.timer);
+        this.setData({ waiting: true, waitingText: '⏳ 等待对手完成…' });
+        this.startChallengePoll();
+      }
     } catch (e) {
       wx.hideLoading();
+      console.error('[submitChallengeAndGo]', e);
       wx.showToast({ title: '提交失败，请重试', icon: 'none' });
+    }
+  },
+
+  // 轮询等待对手提交
+  startChallengePoll() {
+    this.stopChallengePoll();
+    const pollTimer = setInterval(async () => {
+      try {
+        const room = await cloud.getRoom({ code: app.globalData.roomCode });
+        if (room && room.status === 'finished' && room.players && room.players.length >= 2) {
+          this.stopChallengePoll();
+
+          // 更新胜负结果
+          const billResult = app.globalData.billResult || {};
+          const maxAmount = Math.max(...room.players.map(p => p.amount || 0));
+          app.globalData.challengeResult = room;
+          app.globalData.billResult = { ...billResult, success: (billResult.total || 0) >= maxAmount };
+
+          wx.redirectTo({ url: '/pages/result/result' });
+        }
+      } catch (e) {
+        // 轮询失败，静默忽略
+      }
+    }, 2000);
+    this.setData({ challengePollTimer: pollTimer });
+  },
+
+  stopChallengePoll() {
+    if (this.data.challengePollTimer) {
+      clearInterval(this.data.challengePollTimer);
+      this.setData({ challengePollTimer: null });
     }
   },
 

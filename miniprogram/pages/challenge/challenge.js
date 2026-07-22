@@ -1,7 +1,7 @@
 // pages/challenge/challenge.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, getAvatarChar } = require('../../utils/format.js');
+const { formatCNY, getAvatarChar } = require('../../utils/format.js');
 
 Page({
   data: {
@@ -25,7 +25,7 @@ Page({
         billionaire: {
           name: b.name,
           avatar: getAvatarChar(b.name),
-          assetsDisplay: formatMoney(b.assets || 0)
+          assetsDisplay: formatCNY(b.assets || 0)
         }
       });
     }

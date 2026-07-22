@@ -41,4 +41,7 @@ module.exports = {
   checkName: (nickname) => call('checkName', { nickname }),
   // 用户排行榜
   getLeaderboard: () => call('getLeaderboard', {}),
+  // 分享账单
+  saveSharedBill: (data) => call('saveSharedBill', data),
+  getSharedBill: (shareId) => call('getSharedBill', { shareId }),
 };

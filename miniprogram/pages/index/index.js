@@ -1,7 +1,7 @@
 // pages/index/index.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { shortName, getAvatarChar } = require('../../utils/format.js');
+const { shortName, getAvatarChar, formatCNY } = require('../../utils/format.js');
 
 // 20 色转盘调色板
 const COLOR_PALETTE = [
@@ -41,10 +41,18 @@ Page({
   onLoad() {
     const sys = wx.getSystemInfoSync();
     this.setData({ statusBarHeight: sys.statusBarHeight });
-    // 每次进入首页都展示欢迎弹窗（onShow 从其他页面返回时不触发）
-    this.setData({ showWelcome: true });
-    this.refreshNickname();
     this.loadBillionaires();
+    // 等待花名初始化完成再展示欢迎弹窗，避免首次进入显示"神秘富豪"
+    this._waitProfileReady();
+  },
+
+  _waitProfileReady() {
+    if (app.globalData.profileReady) {
+      this.setData({ showWelcome: true });
+      this.refreshNickname();
+      return;
+    }
+    setTimeout(() => this._waitProfileReady(), 200);
   },
 
   onShow() {
@@ -186,7 +194,7 @@ Page({
       };
 
       // 弹出内联富豪简介卡片
-      const formattedAssets = '$' + ((billionaire.assets || 0)).toLocaleString('en-US');
+      const formattedAssets = formatCNY(billionaire.assets || 0);
       this.setData({
         showProfile: true,
         profileName: billionaire.name || '',

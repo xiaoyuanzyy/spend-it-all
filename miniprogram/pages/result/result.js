@@ -27,10 +27,12 @@ Page({
     // 勋章列表（页面常驻展示）
     medals: [],
     earnedMedal1: '',
-    earnedMedal2: ''
+    earnedMedal2: '',
+    scrollHeight: 0
   },
 
   onLoad() {
+    this._calcScrollHeight();
     const challengeResult = app.globalData.challengeResult || { players: [] };
     const billResult = app.globalData.billResult || {};
     const billionaire = billResult.billionaire || {};
@@ -182,6 +184,16 @@ Page({
 
   onBack() {
     wx.navigateBack();
+  },
+
+  /** 动态计算 scroll-view 高度，避免小屏幕底部按钮被遮盖 */
+  _calcScrollHeight() {
+    const sys = wx.getSystemInfoSync();
+    const rpx = sys.windowWidth / 750;
+    // header: 20+44+20 ≈ 84rpx；action-bar: 16+80+16+安全区≈152rpx
+    const headerPx = 84 * rpx;
+    const actionBarPx = 152 * rpx;
+    this.setData({ scrollHeight: sys.windowHeight - headerPx - actionBarPx });
   },
 
   onTapOverlay() {

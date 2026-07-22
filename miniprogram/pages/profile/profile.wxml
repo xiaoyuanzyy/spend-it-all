@@ -70,7 +70,10 @@
           <view class="bill-card">
             <view class="bill-head">
               <text class="bill-name">{{item.billionaireName || '富豪'}}</text>
-              <text class="bill-amount">{{item.amountDisplay}}</text>
+              <view class="bill-head-right">
+                <text class="conquer-flag" wx:if="{{item.conquered}}">🏆 已征服</text>
+                <text class="bill-amount">{{item.amountDisplay}}</text>
+              </view>
             </view>
             <view class="bill-meta">
               <text>第{{item.period}}期 · {{item.timeDisplay}}</text>
@@ -78,6 +81,9 @@
                 <text class="mode-badge mode-{{item.modeKey}}">{{item.modeLabel}}</text>
                 <text class="progress-tag {{item.isOver ? 'over' : ''}}">{{item.isOver ? '已超预算' : item.progress + '%'}}</text>
               </view>
+            </view>
+            <view class="bill-medals" wx:if="{{item.medals.length > 0}}">
+              <text class="bm-item" wx:for="{{item.medals}}" wx:key="*this" wx:for-item="medal">{{medal}}</text>
             </view>
             <view class="bill-actions">
               <view class="bill-items">
@@ -106,10 +112,6 @@
   </scroll-view>
 
   <view class="retire-fixed">
-    <view class="retire-btn" bindtap="onRetire">
-      <text>[→</text>
-      <text>退休·卸任富豪助理</text>
-    </view>
     <view class="feedback-link" bindtap="onFeedback">我要留言</view>
   </view>
 </view>

@@ -1,7 +1,7 @@
 // pages/profile/profile.js
 const app = getApp();
 const cloud = require('../../utils/cloud.js');
-const { formatMoney, formatCNY, getAvatarChar } = require('../../utils/format.js');
+const { formatCNY, getAvatarChar } = require('../../utils/format.js');
 
 const DEFAULT_USER = {
   nickname: '神秘富豪',
@@ -129,10 +129,22 @@ Page({
     try {
       const res = await cloud.getBills();
       if (res && res.list) {
-        const modeMap = { normal: '普通消费', timed: '限时挑战', challenge: '好友对战' };
+        const modeMap = { normal: '普通消费', timed: '限时消费', challenge: '好友对战' };
         const list = res.list.map((b, idx) => {
           const products = b.products || [];
           const prog = b.budget > 0 ? Math.round(b.total / b.budget * 100) : 0;
+          const isChallenge = b.mode === 'challenge';
+          const isTimed = b.mode === 'timed';
+          const conquered = prog >= 100;
+          const medals = [];
+          if (conquered) {
+            if (isChallenge) medals.push('征服富豪勋章');
+            else if (isTimed) medals.push('限时征服勋章');
+            else medals.push('挥霍大师勋章');
+          }
+          if (isChallenge && b.success) {
+            medals.push('挑战王者勋章');
+          }
           return {
             ...b,
             billionaireFullName: b.billionaireName || '富豪',
@@ -145,7 +157,9 @@ Page({
             progress: prog,
             isOver: b.over > 0,
             modeLabel: modeMap[b.mode] || '普通消费',
-            modeKey: b.mode || 'normal'
+            modeKey: b.mode || 'normal',
+            conquered,
+            medals
           };
         });
         const total = list.reduce((s, b) => s + (b.total || 0), 0);
@@ -156,7 +170,7 @@ Page({
         this.setData({
           bills: list,
           'stats.spent': total,
-          'stats.spentDisplay': formatMoney(total).replace('$', ''),
+          'stats.spentDisplay': formatCNY(total).replace('¥', ''),
           'stats.conquered': conquered,
           'stats.badges': badges,
           'user.role': newRole
@@ -327,16 +341,6 @@ Page({
       wx.hideLoading();
       wx.showToast({ title: '上传失败，请重试', icon: 'none' });
     }
-  },
-
-  onRetire() {
-    wx.showModal({
-      title: '提示',
-      content: '确定要卸任富豪助理吗？',
-      success: r => {
-        if (r.confirm) wx.reLaunch({ url: '/pages/index/index' });
-      }
-    });
   },
 
   onFeedback() {

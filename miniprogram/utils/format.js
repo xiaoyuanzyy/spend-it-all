@@ -16,13 +16,30 @@ function formatMoney(num) {
 
 function formatCNY(num) {
   if (num === null || num === undefined) return '¥0';
+  const absNum = Math.abs(num);
+  if (absNum >= 1e8) {
+    return '¥' + (num / 1e8).toFixed(1).replace(/\.0$/, '') + '亿';
+  }
+  if (absNum >= 1e4) {
+    return '¥' + (num / 1e4).toFixed(1).replace(/\.0$/, '') + '万';
+  }
+  if (absNum >= 1e3) {
+    return '¥' + (num / 1e3).toFixed(1).replace(/\.0$/, '') + '千';
+  }
   return '¥' + num.toLocaleString('en-US');
 }
 
 function formatK(num) {
   if (num === null || num === undefined) return '0';
-  if (Math.abs(num) >= 1e3) {
-    return Math.round(num / 1e3) + 'K';
+  const absNum = Math.abs(num);
+  if (absNum >= 1e8) {
+    return (num / 1e8).toFixed(1).replace(/\.0$/, '') + '亿';
+  }
+  if (absNum >= 1e4) {
+    return (num / 1e4).toFixed(1).replace(/\.0$/, '') + '万';
+  }
+  if (absNum >= 1e3) {
+    return (num / 1e3).toFixed(1).replace(/\.0$/, '') + '千';
   }
   return num.toString();
 }

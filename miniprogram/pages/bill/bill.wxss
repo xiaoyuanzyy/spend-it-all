@@ -4,9 +4,13 @@
   background: #f6efde;
   color: #1a1a2e;
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.main-scroll {
+  flex: 1;
+  overflow-y: auto;
 }
 
 /* ======== 头部导航 ======== */
@@ -316,13 +320,8 @@
 .sm-item.challenge { color: #f1c40f; }
 
 /* ======== 商品清单表格 ======== */
-.scroll-area {
-  flex: 1;
-  padding: 0 32rpx;
-  box-sizing: border-box;
-}
-
 .table {
+  margin: 0 32rpx 16rpx;
   background: #ffffff;
   border-radius: 16rpx;
   border: 2rpx solid rgba(212, 175, 55, 0.25);
@@ -396,6 +395,12 @@
   font-size: 28rpx;
   font-weight: 700;
   margin-bottom: 12rpx;
+}
+
+.btn-challenge-result.disabled {
+  background: rgba(212, 175, 55, 0.15);
+  color: rgba(212, 175, 55, 0.5);
+  pointer-events: none;
 }
 
 .btn-row {
@@ -524,6 +529,7 @@
 }
 
 .medal-wrap {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;

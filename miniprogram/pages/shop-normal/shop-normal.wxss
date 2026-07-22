@@ -76,9 +76,12 @@
 }
 
 .billionaire-tags {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
   gap: 6rpx;
+  justify-content: start;
+  max-height: 102rpx;
+  overflow: hidden;
 }
 
 .b-tag {
@@ -88,6 +91,7 @@
   border-radius: 999rpx;
   color: #d4af37;
   font-size: 18rpx;
+  line-height: 1.2;
 }
 
 .budget-right {
@@ -278,11 +282,13 @@
   top: 12rpx;
   right: 12rpx;
   z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
   gap: 6rpx;
-  max-width: 60%;
+  justify-content: end;
+  max-width: 70%;
+  max-height: 126rpx;
+  overflow: hidden;
 }
 
 .product-tag {
@@ -296,6 +302,7 @@
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.35);
   border: 1rpx solid rgba(255, 255, 255, 0.3);
   letter-spacing: 2rpx;
+  line-height: 1.2;
 }
 
 .product-actions {
@@ -404,6 +411,12 @@
   justify-content: center;
 }
 
+.confirm-btn.disabled {
+  background: rgba(212, 175, 55, 0.15);
+  color: rgba(212, 175, 55, 0.4);
+  pointer-events: none;
+}
+
 /* 反应气泡 */
 .reaction-bubble {
   position: fixed;
@@ -426,4 +439,67 @@
 @keyframes pop {
   0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
   100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
+
+/* 挑战等待遮罩 */
+.waiting-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.waiting-card {
+  background: #11183a;
+  border: 2rpx solid rgba(212, 175, 55, 0.4);
+  border-radius: 24rpx;
+  padding: 60rpx 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.5);
+}
+
+.waiting-spinner {
+  width: 64rpx;
+  height: 64rpx;
+  border: 4rpx solid rgba(212, 175, 55, 0.2);
+  border-top-color: #d4af37;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.waiting-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #d4af37;
+  letter-spacing: 4rpx;
+}
+
+.waiting-text {
+  font-size: 26rpx;
+  color: #f5f1e6;
+  font-weight: 600;
+}
+
+.waiting-sub {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.5);
 }
