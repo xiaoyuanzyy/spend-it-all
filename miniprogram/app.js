@@ -78,7 +78,7 @@ App({
   callLogin() {
     const that = this;
     wx.cloud.callFunction({
-      name: 'login',
+      name: 'spendItAll_login',
       data: {},
       success(loginRes) {
         that.globalData.openid = loginRes.result.openid;
@@ -114,7 +114,7 @@ App({
     try {
       const profileRes = await new Promise((resolve, reject) => {
         wx.cloud.callFunction({
-          name: 'getProfile',
+          name: 'spendItAll_getProfile',
           data: {},
           success: r => resolve(r.result),
           fail: reject
@@ -138,7 +138,7 @@ App({
           try {
             await new Promise((resolve, reject) => {
               wx.cloud.callFunction({
-                name: 'saveProfile',
+                name: 'spendItAll_saveProfile',
                 data: { nickname: name, avatar: avatarChar },
                 success: r => resolve(r.result),
                 fail: reject
@@ -191,7 +191,7 @@ App({
       try {
         const checkRes = await new Promise((resolve, reject) => {
           wx.cloud.callFunction({
-            name: 'checkName',
+            name: 'spendItAll_checkName',
             data: { nickname: name },
             success: r => resolve(r.result),
             fail: reject

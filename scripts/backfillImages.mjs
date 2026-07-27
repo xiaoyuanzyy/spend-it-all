@@ -293,10 +293,10 @@ async function fetchAndUploadImage(productId, productName) {
 async function readAllProducts() {
   let all = [];
   try {
-    const countRes = await db.collection('products').count();
+    const countRes = await db.collection('spendItAll_products').count();
     const total = countRes.total;
     for (let offset = 0; offset < total; offset += 100) {
-      const res = await db.collection('products').skip(offset).limit(100).get();
+      const res = await db.collection('spendItAll_products').skip(offset).limit(100).get();
       all = all.concat(res.data || []);
     }
   } catch (e) {
@@ -468,7 +468,7 @@ async function main() {
     if (fileID) {
       imgSuccess++;
       try {
-        await db.collection('products').doc(p._id).update({ image: fileID });
+        await db.collection('spendItAll_products').doc(p._id).update({ image: fileID });
       } catch (e) {
         console.warn(`\n  ⚠️ 更新图片失败 [${p._id}]: ${e.message}`);
       }

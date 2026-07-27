@@ -30,22 +30,26 @@ spend-it-all/
 │   └── utils/
 │       ├── cloud.js                # 云函数调用封装（15 个 API）
 │       └── format.js               # 金额格式化 / 日期 / 名称截取
-├── cloudfunctions/                 # CloudBase 云函数（15 个）
-│   ├── login/                      # 获取 openid
-│   ├── getBillionaire/             # 富豪列表
-│   ├── getProducts/                # 商品推荐（按富豪品味标签匹配）
-│   ├── saveBill/                   # 保存账单（自动递增期数）
-│   ├── getBills/                   # 账单列表
-│   ├── deleteBill/                 # 删除账单（软删除）
-│   ├── clearBills/                 # 清空账单
-│   ├── createRoom/                 # 创建对战房间（BTL-xxxx）
-│   ├── joinRoom/                   # 加入对战房间
-│   ├── startRoom/                  # 发起挑战
-│   ├── getRoom/                    # 查询房间状态
-│   ├── submitRoomResult/           # 提交消费结果 & 判定胜负
-│   ├── saveProfile/                # 保存用户档案
-│   ├── getProfile/                 # 获取用户档案
-│   └── feedback/                   # 留言板（提交 / 列表）
+├── cloudfunctions/                 # CloudBase 云函数（19 个）
+│   ├── spendItAll_login/           # 获取 openid
+│   ├── spendItAll_getBillionaire/  # 富豪列表
+│   ├── spendItAll_getProducts/     # 商品推荐（按富豪品味标签匹配）
+│   ├── spendItAll_saveBill/        # 保存账单（自动递增期数）
+│   ├── spendItAll_getBills/        # 账单列表
+│   ├── spendItAll_deleteBill/      # 删除账单（软删除）
+│   ├── spendItAll_clearBills/      # 清空账单
+│   ├── spendItAll_createRoom/      # 创建对战房间（BTL-xxxx）
+│   ├── spendItAll_joinRoom/        # 加入对战房间
+│   ├── spendItAll_startRoom/       # 发起挑战
+│   ├── spendItAll_getRoom/         # 查询房间状态
+│   ├── spendItAll_submitRoomResult/ # 提交消费结果 & 判定胜负
+│   ├── spendItAll_getSharedBill/   # 获取分享账单
+│   ├── spendItAll_saveSharedBill/  # 保存分享账单
+│   ├── spendItAll_saveProfile/     # 保存用户档案
+│   ├── spendItAll_getProfile/      # 获取用户档案
+│   ├── spendItAll_checkName/       # 检查花名是否占用
+│   ├── spendItAll_getLeaderboard/  # 用户排行榜
+│   └── spendItAll_feedback/        # 留言板（提交 / 列表）
 ├── scripts/                        # 数据同步 & 工具脚本
 │   ├── syncBillionaires.mjs        # 富豪数据同步（Forbes/Wikipedia → CloudBase）
 │   ├── backfillImages.mjs          # 商品 AI 图片补全（Pollinations.ai）
@@ -96,22 +100,22 @@ spend-it-all/
 
 | 集合 | 用途 | 权限 |
 |------|------|------|
-| `billionaires` | 富豪数据（100+ 条） | 所有用户可读 |
-| `products` | 商品库 | 所有用户可读 |
-| `bills` | 消费账单 | 仅创建者可读写 |
-| `rooms` | 对战房间 | 可读，仅创建者可写 |
-| `profiles` | 用户档案 | 仅创建者可读写 |
-| `feedbacks` | 用户留言 | 仅创建者可读写 |
+| `spendItAll_billionaires` | 富豪数据（100+ 条） | 所有用户可读 |
+| `spendItAll_products` | 商品库 | 所有用户可读 |
+| `spendItAll_bills` | 消费账单 | 仅创建者可读写 |
+| `spendItAll_rooms` | 对战房间 | 可读，仅创建者可写 |
+| `spendItAll_profiles` | 用户档案 | 仅创建者可读写 |
+| `spendItAll_feedbacks` | 用户留言 | 仅创建者可读写 |
 
 ## 脚本工具
 
 ### syncBillionaires.mjs
 
-从 Forbes/Wikipedia 同步全球前 100 富豪数据到 CloudBase `billionaires` 集合，包含姓名、国籍、资产、来源公司、品味标签（matchTags）、口头禅等，并自动生成对应商品。
+从 Forbes/Wikipedia 同步全球前 100 富豪数据到 CloudBase `spendItAll_billionaires` 集合，包含姓名、国籍、资产、来源公司、品味标签（matchTags）、口头禅等，并自动生成对应商品。
 
 ### backfillImages.mjs
 
-扫描 `products` 集合中缺少图片的商品，通过 Pollinations.ai API 生成 AI 产品图并上传到云存储。支持并发控制、断点续传和 dry-run 预览。
+扫描 `spendItAll_products` 集合中缺少图片的商品，通过 Pollinations.ai API 生成 AI 产品图并上传到云存储。支持并发控制、断点续传和 dry-run 预览。
 
 ### 环境变量
 

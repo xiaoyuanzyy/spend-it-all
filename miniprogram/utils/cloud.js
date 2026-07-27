@@ -17,31 +17,31 @@ function call(fn, data = {}) {
 module.exports = {
   call,
   // 富豪数据
-  getBillionaire: () => call('getBillionaire', {}),
+  getBillionaire: () => call('spendItAll_getBillionaire', {}),
   // 商品列表
-  getProducts: (billionaireId) => call('getProducts', { billionaireId }),
+  getProducts: (billionaireId) => call('spendItAll_getProducts', { billionaireId }),
   // 保存账单
-  saveBill: (payload) => call('saveBill', payload),
+  saveBill: (payload) => call('spendItAll_saveBill', payload),
   // 账单列表
-  getBills: () => call('getBills', {}),
+  getBills: () => call('spendItAll_getBills', {}),
   // 删除账单
-  deleteBill: (billId) => call('deleteBill', { billId }),
+  deleteBill: (billId) => call('spendItAll_deleteBill', { billId }),
   // 清空账单
-  clearBills: () => call('clearBills', {}),
+  clearBills: () => call('spendItAll_clearBills', {}),
   // 房间
-  createRoom: (data) => call('createRoom', data),
-  joinRoom: (data) => call('joinRoom', data),
-  startRoom: (data) => call('startRoom', data),
-  getRoom: (data) => call('getRoom', data),
-  submitRoomResult: (data) => call('submitRoomResult', data),
+  createRoom: (data) => call('spendItAll_createRoom', data),
+  joinRoom: (data) => call('spendItAll_joinRoom', data),
+  startRoom: (data) => call('spendItAll_startRoom', data),
+  getRoom: (data) => call('spendItAll_getRoom', data),
+  submitRoomResult: (data) => call('spendItAll_submitRoomResult', data),
   // 资料
-  saveProfile: (data) => call('saveProfile', data),
-  getProfile: () => call('getProfile', {}),
+  saveProfile: (data) => call('spendItAll_saveProfile', data),
+  getProfile: () => call('spendItAll_getProfile', {}),
   // 检查花名是否已被占用
-  checkName: (nickname) => call('checkName', { nickname }),
+  checkName: (nickname) => call('spendItAll_checkName', { nickname }),
   // 用户排行榜
-  getLeaderboard: () => call('getLeaderboard', {}),
+  getLeaderboard: () => call('spendItAll_getLeaderboard', {}),
   // 分享账单
-  saveSharedBill: (data) => call('saveSharedBill', data),
-  getSharedBill: (shareId) => call('getSharedBill', { shareId }),
+  saveSharedBill: (data) => call('spendItAll_saveSharedBill', data),
+  getSharedBill: (shareId) => call('spendItAll_getSharedBill', { shareId }),
 };

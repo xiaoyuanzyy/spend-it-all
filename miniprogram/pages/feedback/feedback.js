@@ -22,7 +22,7 @@ Page({
 
   async loadMessages() {
     try {
-      const res = await cloud.call('feedback', { action: 'list' });
+      const res = await cloud.call('spendItAll_feedback', { action: 'list' });
       if (res && res.list) {
         this.setData({
           messages: res.list.map(m => ({
@@ -59,7 +59,7 @@ Page({
     if (this.data.submitting) return;
     this.setData({ submitting: true });
     try {
-      const res = await cloud.call('feedback', {
+      const res = await cloud.call('spendItAll_feedback', {
         action: 'submit',
         nickname: this.data.nickname.trim() || '匿名用户',
         content

@@ -1212,10 +1212,10 @@ function createProductMeta(tag, index) {
 async function readAllProducts() {
   let all = [];
   try {
-    const countRes = await db.collection('products').count();
+    const countRes = await db.collection('spendItAll_products').count();
     const total = countRes.total;
     for (let offset = 0; offset < total; offset += 100) {
-      const res = await db.collection('products').skip(offset).limit(100).get();
+      const res = await db.collection('spendItAll_products').skip(offset).limit(100).get();
       all = all.concat(res.data || []);
     }
   } catch (e) {
@@ -1246,7 +1246,7 @@ async function main() {
   // ===== 第 2 步：并发同步 matchTags =====
   console.log(`【第 2 步】并发同步 ${ALL_MATCH_TAGS.length} 个标签到数据库\n`);
   const tagResults = await Promise.allSettled(
-    ALL_MATCH_TAGS.map(tag => db.collection('matchTags').doc(tag._id).set({ category: tag.category, desc: tag.desc }))
+    ALL_MATCH_TAGS.map(tag => db.collection('spendItAll_matchTags').doc(tag._id).set({ category: tag.category, desc: tag.desc }))
   );
   const tagSynced = tagResults.filter(r => r.status === 'fulfilled').length;
   const tagFailed = tagResults.filter(r => r.status === 'rejected');
@@ -1283,7 +1283,7 @@ async function main() {
     const results = await Promise.allSettled(
       batch.map(b => {
         const { _id, ...dataWithoutId } = b;
-        return db.collection('billionaires').doc(_id).set(dataWithoutId);
+        return db.collection('spendItAll_billionaires').doc(_id).set(dataWithoutId);
       })
     );
     for (const r of results) {
@@ -1356,7 +1356,7 @@ async function main() {
       const batch = newProducts.slice(i, i + BATCH_SIZE);
       const results = await Promise.allSettled(batch.map(p => {
         const { productId, ...data } = p;
-        return db.collection('products').doc(productId).set(data);
+        return db.collection('spendItAll_products').doc(productId).set(data);
       }));
       for (const r of results) {
         if (r.status === 'rejected') {
